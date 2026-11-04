@@ -1,0 +1,605 @@
+<title>쩌리 프롬프트 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Bodoni+Moda:ital,wght@0,500;1,500&family=Courier+Prime&family=IBM+Plex+Mono:wght@400;500&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Pinyon+Script&family=Silkscreen&family=Urbanist:wght@300;400;600;700&display=swap">
+<style>
+/* Layout: 토큰 입장 화면 → 상단 탭에서 시안 A~F 선택 → 시안 하나를 브라우저 프레임 안에 실제 크기로 표시.
+   모든 시안은 같은 데이터(메인 프롬프트 + 의상 카드)를 쓰고, 복사·팝업·추가 기능이 실제로 동작한다.
+   레퍼런스 톤에 맞춰 흑백 종이 질감의 단일 밝은 테마로 고정. */
+:root{
+  color-scheme:light;
+  --paper:#f4f4f2; --paper2:#ebebe8; --ink:#141414; --ink2:#3a3a3a; --mute:#8b8b88; --line:#cfcfcb; --white:#ffffff;
+  --kr:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --type:"Courier Prime","IBM Plex Mono",monospace;
+  --grot:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --pen:"Nanum Pen Script",cursive;
+  --script:"Pinyon Script",cursive;
+  --pixel:"Silkscreen",monospace;
+  --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper2);color:var(--ink);font-family:var(--kr);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper2)}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+img{display:block}
+
+/* ---------- 시안 선택 바 ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper2);padding-block:16px 12px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.top-in{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.top-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.top h1{margin:0;font-size:16px;font-weight:700}
+.top p{margin:2px 0 0;color:#6d6d6a;font-size:12.5px}
+.top .tools{display:flex;gap:6px}
+.top .tools button{border:1px solid var(--line);background:var(--white);border-radius:999px;padding:6px 12px;font-size:12px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.tabs button{flex:none;border:1px solid var(--line);background:var(--white);font-size:13px;padding:8px 14px;border-radius:999px;white-space:nowrap}
+.tabs button b{font-family:var(--mono);margin-right:6px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.stage{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.note{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;font-size:13px;color:#5f5f5c}
+.note strong{color:var(--ink);font-size:15px}
+.frame{background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 14px 40px -20px rgba(0,0,0,.35)}
+.bar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--line);background:#f7f7f6}
+.bar i{width:10px;height:10px;border-radius:50%;background:#d5d5d2}
+.bar span{margin-left:10px;font-size:12px;color:var(--mute);font-family:var(--mono)}
+
+/* 공용: 의상 이미지 */
+.art{background:#efefec var(--noise);overflow:hidden;position:relative}
+.art img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.08)}
+.art.contain img{object-fit:contain;padding:8%}
+.copy-ok{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.06)}}
+
+/* ======================= A. 바인더 스크랩북 ======================= */
+.dA{background:#f7f7f5 var(--noise);color:var(--ink);font-family:var(--kr)}
+.dA .pg{padding:26px clamp(16px,4vw,52px) 34px;position:relative}
+.dA .rings{height:40px;background:
+  radial-gradient(ellipse 6px 15px at 50% 42%,transparent 0 3.5px,#8d8d8a 4px 6px,transparent 6.5px) 0 0/72px 40px repeat-x,
+  radial-gradient(circle at 50% 62%,#2b2b2b 0 4.5px,transparent 5.5px) 0 0/72px 40px repeat-x,
+  linear-gradient(transparent 19px,#d4d4d0 19px 20px,transparent 20px);}
+.dA nav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--type);font-size:12px;letter-spacing:.06em}
+.dA nav ul{display:flex;gap:18px;list-style:none;margin:0;padding:0}
+.dA .logo{font-family:"Bodoni Moda",serif;font-size:clamp(34px,6vw,64px);line-height:1;letter-spacing:-.02em}
+.dA .logo i{font-style:italic}
+.dA .logo small{display:block;font-family:var(--script);font-size:.55em;color:#9a9a96;filter:blur(.4px);margin:4px 0 0 18%}
+.dA .head{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center;margin-top:22px}
+.dA .sub{font-family:var(--type);font-size:12px;letter-spacing:.12em;margin-top:14px}
+.dA .card{background:repeating-linear-gradient(#fff 0 27px,#e4e8ee 27px 28px);border:1px solid #dcdcd8;padding:26px 24px 20px;position:relative;transform:rotate(-1.2deg);box-shadow:3px 4px 0 #dededa}
+.dA .card::before,.dA .card::after{content:"";position:absolute;width:86px;height:24px;background:rgba(220,220,214,.75);top:-12px}
+.dA .card::before{left:18px;transform:rotate(-6deg)}.dA .card::after{right:22px;transform:rotate(5deg)}
+.dA .card h3{margin:0 0 6px;font-family:var(--type);font-size:12px;letter-spacing:.14em}
+.dA .card p{margin:0;font-family:var(--type);font-size:15px;line-height:28px;word-break:break-word}
+.dA .card .row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap}
+.dA .btn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;font-family:var(--type);font-size:13px;letter-spacing:.12em;padding:9px 16px}
+.dA .btn.ghost{background:transparent;color:var(--ink)}
+.dA .pen{font-family:var(--pen);font-size:22px;color:#555}
+.dA h2{font-family:var(--grot);font-weight:800;font-stretch:80%;font-size:clamp(26px,3.4vw,40px);letter-spacing:-.01em;margin:0}
+.dA .sech{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.dA .sech p{margin:0;font-family:var(--type);font-size:12.5px;max-width:34em;color:#555;line-height:1.6}
+.dA .looks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 22px}
+.dA .pol{background:#fff;padding:10px 10px 12px;border:1px solid #e0e0dc;box-shadow:2px 3px 0 #e2e2de;text-align:left;transition:transform .2s;position:relative}
+.dA .pol:nth-child(odd){transform:rotate(-2deg)}.dA .pol:nth-child(even){transform:rotate(1.6deg)}
+.dA .pol:hover{transform:rotate(0) translateY(-4px)}
+.dA .pol::after{content:"";position:absolute;width:54px;height:18px;background:rgba(214,214,208,.8);top:-9px;left:50%;margin-left:-27px;transform:rotate(-3deg)}
+.dA .pol .art{aspect-ratio:3/4}
+.dA .pol span{display:flex;justify-content:space-between;margin-top:8px;font-family:var(--pen);font-size:20px;line-height:1}
+.dA .pol small{font-family:var(--type);font-size:10px;color:#888;align-self:end}
+.dA .add{border:1.5px dashed #9a9a96;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:200px;font-family:var(--type);font-size:12px;letter-spacing:.1em}
+.dA .add b{font-size:34px;font-weight:400}
+.dA footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--type);font-size:11.5px;letter-spacing:.06em;color:#555}
+@media (max-width:820px){.dA .head{grid-template-columns:1fr}.dA .looks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ======================= B. 에디터 툴 ======================= */
+.dB{background:#fff;color:#111;font-family:var(--grot);position:relative;overflow:hidden}
+.dB .pg{padding:20px clamp(16px,3vw,36px) 36px;position:relative}
+.dB .menu{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;font-size:14px}
+.dB .menu ul{display:flex;gap:24px;list-style:none;margin:0;padding:0}
+.dB .menu li.on{background:#111;color:#fff;padding:0 4px}
+.dB .bars{display:flex;gap:8px;align-items:center}
+.dB .bars i{display:block;height:18px;border:1px solid #111}
+.dB .bars i.f{background:#111}
+.dB .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,3vw,40px);margin-top:36px;align-items:start}
+.dB .sel{position:relative;border:1px solid #111;padding:22px}
+.dB .sel .h{position:absolute;width:11px;height:11px;background:#fff;border:1px solid #111}
+.dB .h.tl{top:-6px;left:-6px}.dB .h.tr{top:-6px;right:-6px}.dB .h.bl{bottom:-6px;left:-6px}.dB .h.br{bottom:-6px;right:-6px}.dB .h.tm{top:-6px;left:calc(50% - 6px)}.dB .h.bm{bottom:-6px;left:calc(50% - 6px)}
+.dB .big{font-weight:400;font-stretch:88%;font-size:clamp(64px,12vw,150px);line-height:.86;letter-spacing:-.04em;margin:0;position:relative}
+.dB .big .o{-webkit-text-stroke:2px #111;color:#111;position:relative;display:inline-block}
+.dB .big .o::after{content:"";position:absolute;inset:6% -2% 4%;background:
+  linear-gradient(#111,#111) 0 0/8px 8px no-repeat,linear-gradient(#111,#111) 100% 0/8px 8px no-repeat,linear-gradient(#111,#111) 0 100%/8px 8px no-repeat,linear-gradient(#111,#111) 100% 100%/8px 8px no-repeat;opacity:.9}
+.dB .tag{display:inline-flex;align-items:center;gap:14px;border:1px solid #111;padding:6px 10px;font-size:14px;margin-bottom:16px;background:#fff}
+.dB .prompt{font-family:var(--mono);font-size:14px;line-height:1.75;margin:0;word-break:break-word}
+.dB .tb{display:flex;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap}
+.dB .tb .box{border:1px solid #111;padding:5px 10px;font-size:13px;background:#fff}
+.dB .tb button{border:1px solid #111;background:#111;color:#fff;padding:7px 14px;font-size:13px}
+.dB .tb button.w{background:#fff;color:#111}
+.dB .side{display:flex;flex-direction:column;gap:18px}
+.dB .rot{writing-mode:vertical-rl;font-size:13px;position:absolute;left:clamp(4px,1vw,12px);top:240px}
+.dB .swatch{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+.dB .grad{width:130px;border:1px solid #111;padding:8px;background:#fff}
+.dB .grad div{aspect-ratio:1;background:linear-gradient(135deg,#fff,#111)}
+.dB .grad span{display:block;margin-top:6px;border:1px solid #111;font-family:var(--mono);font-size:10px;padding:1px 4px;width:70%}
+.dB .ht{position:relative}
+.dB .ht::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,transparent 0 .9px,#fff 1.3px) 0 0/4px 4px;mix-blend-mode:lighten;pointer-events:none}
+.dB .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px;margin-top:56px}
+.dB .it{border:0;background:none;padding:0;text-align:left;position:relative}
+.dB .it .art{aspect-ratio:1;border:1px solid #111}
+.dB .it .h{display:none}
+.dB .it:hover .h,.dB .it:focus-visible .h{display:block}
+.dB .it:focus-visible{outline:none}
+.dB .it .nm{display:flex;justify-content:space-between;font-size:13px;margin-top:8px}
+.dB .it .nm em{font-style:normal;font-family:var(--mono);font-size:11px;color:#777}
+.dB .addt{border:1px dashed #111;background:#fff;aspect-ratio:1;display:grid;place-items:center;font-size:42px;font-weight:300}
+.dB .foot{display:flex;justify-content:space-between;align-items:center;margin-top:52px;gap:12px;flex-wrap:wrap}
+.dB .dots{font-size:22px;letter-spacing:4px}
+@media (max-width:820px){.dB .hero{grid-template-columns:1fr}.dB .grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dB .rot{display:none}}
+
+/* ======================= C. 위젯 보드 ======================= */
+.dC{background:#0d0d0d;color:#111;font-family:"Urbanist",var(--kr);padding:clamp(16px,4vw,48px)}
+.dC .board{background:#fff;border-radius:6px 6px 120px 6px;padding:clamp(16px,3vw,32px);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;position:relative}
+.dC .w{border:1.5px solid #111;border-radius:22px;padding:16px 18px;min-width:0}
+.dC .nav{grid-column:1/-1;border-radius:999px;display:flex;gap:20px;align-items:center;padding:10px 22px;font-size:14px;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.dC .nav b{font-weight:700}
+.dC .nav .sp{flex:1}
+.dC .hello{grid-column:span 3;border:0;padding:6px 4px;display:flex;flex-direction:column;justify-content:center}
+.dC .hello h2{margin:0;font-weight:300;font-size:clamp(38px,5vw,62px);line-height:1.08;letter-spacing:-.02em}
+.dC .hello h2 b{font-weight:300;font-size:1.2em;line-height:.6;vertical-align:-.1em}
+.dC .clock{grid-column:span 3;display:grid;grid-template-columns:auto 1fr;padding:0;overflow:hidden}
+.dC .clock .t{background:#111;color:#fff;padding:16px 24px;font-size:30px;font-weight:400;line-height:1.1;display:flex;align-items:center;font-variant-numeric:tabular-nums}
+.dC .clock .x{padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.dC .clock .x b{font-size:22px}
+.dC .clock .x span{font-size:12px;color:#555}
+.dC .clock .x button{align-self:flex-start;margin-top:6px;border:1.5px solid #111;background:#fff;border-radius:999px;padding:5px 14px;font-size:13px;font-weight:600}
+.dC .now{grid-column:span 4;background:#111;color:#fff;border-color:#111;display:flex;flex-direction:column;gap:12px}
+.dC .now .lbl{display:flex;justify-content:space-between;gap:8px;font-size:13px;align-items:center}
+.dC .now .lbl i{width:16px;height:16px;border-radius:50%;background:#fff;display:inline-block;margin-right:8px;vertical-align:-3px}
+.dC .now p{margin:0;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#e8e8e8;word-break:break-word}
+.dC .now .track{height:2px;background:#555;position:relative}.dC .now .track::after{content:"";position:absolute;left:0;top:0;bottom:0;width:38%;background:#fff}
+.dC .now .ctl{display:flex;justify-content:center;align-items:center;gap:20px}
+.dC .now .ctl button{border:0;background:none;color:#fff;font-size:14px}
+.dC .now .ctl .play{width:44px;height:44px;border-radius:50%;border:1.5px solid #fff;font-weight:700}
+.dC .disc{grid-column:span 2;border:0;padding:0;display:flex;align-items:center;justify-content:center;position:relative}
+.dC .disc .c{width:100%;max-width:220px;aspect-ratio:1;border-radius:50%;border:1.5px solid #111;position:relative;display:grid;place-items:center;background:repeating-radial-gradient(circle,#fff 0 6px,#f1f1f1 6px 7px)}
+.dC .disc .c::after{content:"";width:22%;aspect-ratio:1;border-radius:50%;background:#111}
+.dC .disc .pill{position:absolute;top:8px;right:6px;border:1.5px solid #111;border-radius:999px;padding:2px 10px;font-size:12px;background:#fff}
+.dC .alb{grid-column:span 6;display:flex;flex-direction:column;gap:14px}
+.dC .alb .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.dC .alb .hd b{font-size:18px}
+.dC .alb .hd span{font-size:12px;border:1.5px solid #111;border-radius:999px;padding:4px 12px}
+.dC .strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.dC .ph{border:0;padding:0;background:none;text-align:left}
+.dC .ph .art{aspect-ratio:3/4;border-radius:16px;box-shadow:inset 0 0 30px rgba(0,0,0,.25)}
+.dC .ph span{display:block;margin-top:6px;font-size:13px;font-weight:600}
+.dC .ph small{color:#777;font-weight:400;font-size:11px}
+.dC .ph.add .art{display:grid;place-items:center;background:#fff;border:1.5px dashed #111;box-shadow:none;font-size:34px;font-weight:300}
+.dC .tabside{position:absolute;right:-14px;top:22%;background:#fff;border:1.5px solid #111;border-radius:999px;writing-mode:vertical-rl;padding:16px 8px;font-size:12px}
+.dC .arrow{position:absolute;right:-6px;bottom:-6px;width:64px;height:64px;border-radius:50%;background:#fff;border:1.5px solid #111;display:grid;place-items:center;font-size:26px}
+@media (max-width:820px){.dC .hello,.dC .clock,.dC .now,.dC .disc,.dC .alb{grid-column:1/-1}.dC .disc .c{max-width:160px}.dC .tabside{display:none}.dC .board{border-radius:6px 6px 60px 6px}}
+
+/* ======================= D. 사이드바 매거진 ======================= */
+.dD{background:#fff;color:#111;font-family:var(--grot)}
+.dD .topb{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px clamp(16px,4vw,48px);border-bottom:1.5px solid #333;font-weight:700;font-size:clamp(14px,1.8vw,20px);letter-spacing:-.01em}
+.dD .topb i{display:block;width:clamp(60px,12vw,150px);height:14px;background:#111}
+.dD .lay{display:grid;grid-template-columns:150px minmax(0,1fr) 120px;gap:clamp(16px,3vw,36px);padding:36px clamp(16px,3vw,40px) 40px}
+.dD .sb{display:flex;flex-direction:column;gap:22px;font-size:12px;font-weight:700;letter-spacing:.04em}
+.dD .sb a{display:flex;align-items:center;gap:12px;text-decoration:none}
+.dD .sb a i{width:20px;height:20px;border-radius:50%;background:#111;flex:none}
+.dD .sb a:nth-child(2) i{border-radius:3px}.dD .sb a:nth-child(3) i{border-radius:50% 50% 0 50%}
+.dD .sb .chip{border:1.5px solid #111;border-radius:999px;padding:6px 0;text-align:center;font-size:11px;margin-top:20px}
+.dD .hero{position:relative;padding:20px 0 30px}
+.dD .ghost{font-weight:900;font-stretch:115%;font-size:clamp(64px,12vw,150px);line-height:.8;color:#c9c9c9;margin:0;letter-spacing:-.04em;word-break:break-all}
+.dD .ghost span{display:block;color:#a8a8a8}
+.dD .mainbox{position:relative;margin-top:-34px;margin-left:clamp(0px,6vw,80px);background:rgba(255,255,255,.9);border-top:3px solid #111;padding-top:14px;max-width:560px}
+.dD .mainbox .lb{display:flex;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:.06em}
+.dD .mainbox p{font-family:var(--mono);font-size:14px;line-height:1.75;margin:10px 0 14px;word-break:break-word}
+.dD .pillrow{display:flex;gap:8px;flex-wrap:wrap}
+.dD .pill{border:0;border-radius:999px;background:#7c7c7c;color:#fff;padding:6px 16px;font-size:13px;font-weight:600}
+.dD .pill.k{background:#111}
+.dD .sec{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(12px,2vw,28px);margin-top:40px}
+.dD .vert{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:900;font-stretch:110%;font-size:clamp(56px,8vw,104px);line-height:.8;color:#3a3a3a;letter-spacing:-.02em;margin:0}
+.dD .list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 18px}
+.dD .tk{border:1px solid #bbb;background:#fff;padding:8px;text-align:left;display:flex;flex-direction:column;gap:8px;transition:transform .2s;box-shadow:0 2px 0 #e5e5e5}
+.dD .tk:nth-child(3n+1){transform:rotate(-1.5deg)}.dD .tk:nth-child(3n){transform:rotate(1.2deg)}
+.dD .tk:hover{transform:rotate(0) scale(1.02)}
+.dD .tk .art{aspect-ratio:4/5}
+.dD .tk .no{font-weight:900;font-stretch:115%;font-size:26px;color:#b8b8b8;line-height:1}
+.dD .tk b{font-size:13px}
+.dD .tk .bc{height:16px;background:repeating-linear-gradient(90deg,#111 0 1px,transparent 1px 3px,#111 3px 5px,transparent 5px 6px,#111 6px 7px,transparent 7px 10px)}
+.dD .tk.add{align-items:center;justify-content:center;border-style:dashed;min-height:220px;font-weight:700}
+.dD .rs{display:flex;flex-direction:column;gap:22px;font-size:15px}
+.dD .rs button{border:0;background:none;text-decoration:underline;text-underline-offset:4px;text-align:left;padding:0}
+.dD footer{display:flex;justify-content:space-between;padding:0 clamp(16px,4vw,48px) 28px;font-size:12px;letter-spacing:.14em;color:#555;gap:10px;flex-wrap:wrap}
+@media (max-width:900px){.dD .lay{grid-template-columns:1fr}.dD .sb{flex-direction:row;flex-wrap:wrap}.dD .sb .chip{display:none}.dD .rs{flex-direction:row}.dD .list{grid-template-columns:repeat(2,minmax(0,1fr))}.dD .vert{font-size:52px}}
+
+/* ======================= E. 카세트 클럽 ======================= */
+.dE{background:#fff;color:#111;font-family:var(--grot);position:relative}
+.dE .pg{padding:26px clamp(16px,4vw,52px) 40px}
+.dE .tl{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;font-size:10.5px;letter-spacing:.04em}
+.dE .tl .go{font-size:clamp(22px,3vw,30px);font-weight:400;letter-spacing:.02em}
+.dE .tl .c{text-align:center}.dE .tl .c u{font-weight:700}
+.dE .tl .r{text-align:right;font-weight:700}
+.dE .xs{display:grid;grid-template-columns:repeat(3,14px);gap:12px;justify-content:center;margin:12px auto 0;font-size:13px;font-weight:700}
+.dE .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:20px;align-items:center;margin-top:24px}
+.dE h2{margin:0;font-weight:500;font-stretch:72%;font-size:clamp(70px,13vw,168px);line-height:.84;letter-spacing:-.035em}
+.dE h2 span{background:#dedede;padding-right:.05em}
+.dE .tape{position:relative;transform:rotate(-14deg);margin:20px 0;max-width:520px;justify-self:center;width:100%}
+.dE .tape svg{width:100%;height:auto;display:block}
+.dE .lab{position:absolute;left:10%;right:10%;top:62%;height:17%;background:#fff;border-radius:3px;padding:4px 10px;display:flex;align-items:center;gap:10px;overflow:hidden}
+.dE .lab b{font-family:var(--pen);font-size:clamp(16px,2.4vw,26px);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.dE .lab i{font-style:normal;border:1.5px solid #111;font-weight:700;padding:0 6px;font-size:14px}
+.dE .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:22px}
+.dE .ctl button{border-radius:999px;padding:6px 18px;font-size:12px;border:1.5px solid #111;background:#fff;font-weight:600}
+.dE .ctl button.k{background:#111;color:#fff}
+.dE .ptext{font-family:var(--mono);font-size:13px;line-height:1.7;margin:18px 0 0;max-width:46em;color:#333;word-break:break-word}
+.dE .side{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-top:50px;flex-wrap:wrap}
+.dE .side .arr{font-size:26px;letter-spacing:-6px}
+.dE .side .ap{text-align:right;line-height:.95}
+.dE .side .ap b{display:block;font-size:clamp(26px,3.4vw,40px);font-weight:800;font-stretch:90%}
+.dE .side .ap span{font-size:clamp(14px,1.6vw,20px)}
+.dE .tracks{margin-top:26px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.dE .tr{border:0;background:none;text-align:left;padding:0}
+.dE .tr .art{aspect-ratio:1;background-color:#fff;border:1.5px solid #111}
+.dE .tr .j{display:flex;align-items:baseline;gap:8px;border:1.5px solid #111;border-top:0;padding:6px 8px;font-size:12px}
+.dE .tr .j em{font-style:normal;font-weight:800;font-stretch:80%}
+.dE .tr .j span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dE .tr.add .art{display:grid;place-items:center;font-size:40px;font-weight:300}
+.dE .join{display:block;margin:40px auto 0;border:0;background:none;text-decoration:underline;font-size:14px}
+@media (max-width:820px){.dE .hero{grid-template-columns:1fr}.dE .tracks{grid-template-columns:repeat(2,minmax(0,1fr))}.dE .tape{transform:rotate(-8deg)}}
+
+/* ======================= F. 레코드 슬리브 ======================= */
+.dF{background:#f3f3f1 var(--noise);color:#111;font-family:"Archivo",var(--kr);position:relative;overflow:hidden}
+.dF .pg{padding:26px clamp(16px,4vw,52px) 40px;position:relative}
+.dF .yr{position:absolute;left:8px;top:24px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:900;font-size:22px;color:transparent;-webkit-text-stroke:1px #9a9a9a;letter-spacing:.04em}
+.dF .top3{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start}
+.dF .chrome{font-weight:900;font-stretch:85%;font-size:clamp(30px,4vw,46px);letter-spacing:-.02em;background:linear-gradient(#cfcfcf,#5e5e5e 55%,#a6a6a6);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0;line-height:1}
+.dF .cur{font-size:14px;margin-top:10px;font-weight:600}
+.dF .cur span{display:block;color:#888;font-weight:400;font-size:12px;margin-top:2px}
+.dF .seg{display:flex;margin-top:14px}
+.dF .seg button{border:0;padding:8px 20px;font-size:13px;background:linear-gradient(#888,#555);color:#fff}
+.dF .seg button:first-child{background:#111}
+.dF .dots{display:flex;gap:6px;margin-top:6px}.dF .dots i{width:7px;height:7px;border-radius:50%;background:#333}.dF .dots i:last-child{background:#bbb}
+.dF .mid{text-align:center;font-family:var(--pixel);font-size:9px;letter-spacing:.06em;line-height:1.6}
+.dF .rt{text-align:right}
+.dF .rt b{font-size:clamp(18px,2vw,24px);display:block}
+.dF .rt .n{font-size:clamp(26px,3vw,36px);font-weight:500;margin-top:14px;display:block}
+.dF .rt small{display:block;color:#888;font-size:11px;margin-top:4px;line-height:1.5}
+.dF .stage{position:relative;max-width:760px;margin:30px auto 0;padding-top:min(36%,270px)}
+.dF .vinyl{position:absolute;left:50%;top:0;width:min(92%,640px);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(circle,#ddd 0 15%,#1a1a1a 15.4% 16%,transparent 16.2%),repeating-radial-gradient(circle,#141414 0 2px,#262626 2px 3px);animation:spin 14s linear infinite}
+.dF .vinyl::after{content:"ZZEORI RECORDS";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--grot);font-weight:800;font-size:11px;letter-spacing:.1em;color:#555}
+@keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
+.dF .sleeve{position:relative;background:#fafafa var(--noise);padding:clamp(22px,4vw,44px);box-shadow:0 -10px 30px -10px rgba(0,0,0,.25);text-align:center;border-top:1px solid #ddd}
+.dF .sleeve h2{font-family:var(--pixel);font-weight:400;font-size:clamp(20px,3.4vw,34px);line-height:1.15;margin:0;letter-spacing:.02em}
+.dF .sleeve p{font-family:var(--mono);font-size:13.5px;line-height:1.75;text-align:left;margin:18px auto 0;max-width:40em;word-break:break-word}
+.dF .sleeve .bt{display:flex;justify-content:center;gap:10px;margin-top:20px;align-items:center}
+.dF .sleeve .bt button{border-radius:999px;border:1px solid #111;background:#fff;padding:7px 22px;font-size:13px}
+.dF .sleeve .bt button.k{background:#4a4a4a;color:#fff;border-color:#4a4a4a}
+.dF .sleeve .bt span{font-family:var(--script);font-size:20px;color:#999}
+.dF .stick{position:absolute;right:-18px;bottom:-26px;width:96px;height:96px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-family:var(--script);font-size:34px;transform:rotate(-12deg);box-shadow:-4px 0 0 #fff}
+.dF .script{font-family:var(--script);font-size:clamp(54px,9vw,110px);color:#b9b9b6;filter:blur(.8px);margin:60px 0 -30px;line-height:1;transform:rotate(-6deg);text-align:center;pointer-events:none}
+.dF .env{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 22px;position:relative}
+.dF .lt{border:0;padding:0;background:none;text-align:left;position:relative;transition:transform .25s}
+.dF .lt:nth-child(4n+1){transform:rotate(-3deg)}.dF .lt:nth-child(4n+2){transform:rotate(2deg) translateY(14px)}.dF .lt:nth-child(4n+3){transform:rotate(-1deg)}.dF .lt:nth-child(4n){transform:rotate(3deg) translateY(10px)}
+.dF .lt:hover{transform:rotate(0) translateY(-6px)}
+.dF .lt .art{aspect-ratio:1;background-color:#e7e7e4;border:1px solid #d0d0cc;box-shadow:0 8px 14px -10px rgba(0,0,0,.4)}
+.dF .lt .art::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom right,transparent 49.6%,rgba(0,0,0,.08) 50%,transparent 50.4%),linear-gradient(to bottom left,transparent 49.6%,rgba(0,0,0,.08) 50%,transparent 50.4%);pointer-events:none;z-index:1;opacity:.6}
+.dF .lt span{display:block;margin-top:10px;font-size:13px;color:#555}
+.dF .lt span b{color:#111;font-weight:600}
+.dF .lt.add .art{display:grid;place-items:center;font-family:var(--script);font-size:46px;color:#888;background:transparent;border-style:dashed}
+.dF .names{margin:56px auto 0;max-width:520px;display:flex;align-items:center;gap:10px;font-size:13px;color:#777}
+.dF .names b{font-family:"Bodoni Moda",serif;font-weight:400;font-size:64px;color:#111;line-height:1}
+.dF .names div{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;flex:1}
+.dF .names span:nth-child(3n){transform:rotate(5deg)}
+@media (max-width:820px){.dF .top3{grid-template-columns:1fr}.dF .rt{text-align:left}.dF .mid{display:none}.dF .env{grid-template-columns:repeat(2,minmax(0,1fr))}.dF .stick{right:4px;width:70px;height:70px;font-size:24px}}
+
+/* ======================= 공용 팝업 ======================= */
+.ov{position:fixed;inset:0;z-index:40;background:rgba(20,20,20,.55);display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:fade .18s}
+@keyframes fade{from{opacity:0}}
+.sheet{background:#fafaf8 var(--noise);color:var(--ink);width:min(860px,100%);max-height:100%;overflow:auto;border:1.5px solid var(--ink);position:relative;box-shadow:8px 8px 0 #111}
+.sheet .x{position:absolute;top:10px;right:10px;width:36px;height:36px;border:1.5px solid var(--ink);background:#fff;font-size:18px;line-height:1;z-index:2}
+.view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+.view .art{aspect-ratio:3/4;border-right:1.5px solid var(--ink)}
+.view .bd{padding:26px 24px 22px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.view .tg{font-family:var(--mono);font-size:11px;letter-spacing:.12em;border:1px solid var(--ink);align-self:flex-start;padding:2px 8px}
+.view h3{margin:0;font-size:24px;font-weight:700;padding-right:36px}
+.view pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:13.5px;line-height:1.75;background:#fff;border:1px dashed #9a9a96;padding:14px;max-height:280px;overflow:auto}
+.view .act{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.bk{border:1.5px solid var(--ink);background:var(--ink);color:#fff;padding:10px 18px;font-size:14px;font-weight:600}
+.bk.w{background:#fff;color:var(--ink)}
+.bk.del{background:#fff;color:#a12a2a;border-color:#a12a2a}
+.form{padding:28px 24px 24px;display:flex;flex-direction:column;gap:14px}
+.form h3{margin:0;font-size:22px}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.form input[type=text],.form textarea,.form select{font:inherit;font-weight:400;border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:14px;border-radius:0}
+.form textarea{min-height:120px;font-family:var(--mono);font-size:13px;line-height:1.6;resize:vertical}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .seg{display:flex;border:1.5px solid var(--ink)}
+.form .seg label{flex:1;flex-direction:row;align-items:center;justify-content:center;gap:6px;padding:9px;cursor:pointer;font-weight:500}
+.form .seg label:has(input:checked){background:var(--ink);color:#fff}
+.form .seg input{position:absolute;opacity:0;pointer-events:none}
+.form .drop{border:1.5px dashed #888;background:#fff;padding:14px;display:flex;gap:14px;align-items:center}
+.form .drop .pv{width:72px;height:96px;flex:none;background:#eee var(--noise);display:grid;place-items:center;font-size:11px;color:#888;overflow:hidden}
+.form .drop .pv img{width:100%;height:100%;object-fit:cover}
+.form .hint{font-size:12px;color:#777;font-weight:400}
+.form .err{color:#a12a2a;font-size:13px;min-height:1em;margin:0}
+@media (max-width:640px){.view{grid-template-columns:1fr}.view .art{aspect-ratio:4/3;border-right:0;border-bottom:1.5px solid var(--ink)}.form .two{grid-template-columns:1fr}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;font-size:14px;z-index:60;border-radius:999px}
+
+/* ======================= 토큰 입장 화면 ======================= */
+.gate{position:fixed;inset:0;z-index:50;background:#f2f2f0 var(--noise);display:grid;place-items:center;overflow:auto;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.gate .gbox{width:min(440px,100%);position:relative;display:flex;flex-direction:column;gap:18px}
+.gate .gscript{font-family:var(--script);font-size:clamp(60px,14vw,96px);color:#bdbdba;filter:blur(.7px);line-height:.8;transform:rotate(-8deg);margin:0 0 -20px -10px}
+.gate h2{margin:0;font-family:var(--grot);font-weight:500;font-stretch:72%;font-size:clamp(54px,12vw,84px);line-height:.85;letter-spacing:-.03em}
+.gate h2 span{background:#dcdcd9}
+.gate p{margin:0;font-size:14px;color:#555;line-height:1.6}
+.gate form{border:1.5px solid #111;background:#fff;padding:6px;display:flex;gap:6px;position:relative}
+.gate form .h{position:absolute;width:9px;height:9px;background:#fff;border:1px solid #111}
+.gate input{flex:1;min-width:0;border:0;font-family:var(--mono);font-size:15px;padding:10px;background:transparent}
+.gate input:focus{outline:none}
+.gate form:focus-within{box-shadow:4px 4px 0 #111}
+.gate button{border:0;background:#111;color:#fff;padding:0 18px;font-size:14px;font-weight:600}
+.gate .gerr{color:#a12a2a;font-size:13px;min-height:1.2em}
+.gate .demo{font-family:var(--mono);font-size:12px;color:#777;border-top:1px dashed #aaa;padding-top:12px}
+.gate .demo code{background:#fff;border:1px solid #ccc;padding:1px 6px;color:#111}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<!-- 토큰 입장 화면 -->
+<div class="gate" id="gate">
+  <div class="gbox">
+    <div class="gscript" aria-hidden="true">private</div>
+    <h2>ZZEORI<br><span>PROMPT</span><br>ROOM</h2>
+    <p>초대받은 사람만 들어올 수 있는 프롬프트 보관함이에요. 받은 토큰을 입력해 주세요.</p>
+    <form id="gform" autocomplete="off">
+      <i class="h" style="top:-5px;left:-5px"></i><i class="h" style="top:-5px;right:-5px"></i><i class="h" style="bottom:-5px;left:-5px"></i><i class="h" style="bottom:-5px;right:-5px"></i>
+      <label for="gtoken" class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">토큰</label>
+      <input id="gtoken" type="password" placeholder="토큰 입력" spellcheck="false">
+      <button type="submit">입장 →</button>
+    </form>
+    <div class="gerr" id="gerr" role="alert"></div>
+    <div class="demo">시안 확인용 토큰: <code>zzeori2026</code></div>
+  </div>
+</div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="top-row">
+      <div>
+        <h1>쩌리 프롬프트 · 홈페이지 시안 6종</h1>
+        <p>메인 프롬프트 복사, 의상 이미지 누르면 프롬프트 팝업, 프롬프트·이미지 추가가 모든 시안에서 실제로 동작해요. 의상 그림은 예시예요.</p>
+      </div>
+      <div class="tools"><button type="button" id="reset">추가한 항목 지우기</button><button type="button" id="lock">잠그기</button></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="시안 선택">
+      <button role="tab" id="t-a" data-k="a"><b>A</b>바인더 스크랩북</button>
+      <button role="tab" id="t-b" data-k="b"><b>B</b>에디터 툴</button>
+      <button role="tab" id="t-c" data-k="c"><b>C</b>위젯 보드</button>
+      <button role="tab" id="t-d" data-k="d"><b>D</b>사이드바 매거진</button>
+      <button role="tab" id="t-e" data-k="e"><b>E</b>카세트 클럽</button>
+      <button role="tab" id="t-f" data-k="f"><b>F</b>레코드 슬리브</button>
+    </div>
+  </div>
+</header>
+
+<main class="stage">
+  <section id="draft-a" role="tabpanel" aria-labelledby="t-a">
+    <div class="note"><strong>A. 바인더 스크랩북</strong><span>섹션 사이마다 바인더 링이 있는 종이 노트. 메인 프롬프트는 타자기 인덱스 카드, 의상은 테이프 붙인 폴라로이드로 보여줘요.</span></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>zzon.64bit.kr/#/</span></div><div class="dA" id="vA"></div></div>
+  </section>
+  <section id="draft-b" role="tabpanel" aria-labelledby="t-b" hidden>
+    <div class="note"><strong>B. 에디터 툴</strong><span>그래픽 툴 화면처럼 선택 핸들, 툴바, 큰 타이포를 섞었어요. 의상 이미지는 하프톤 망점 처리, 마우스를 올리면 선택 핸들이 생겨요.</span></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>zzon.64bit.kr/#/</span></div><div class="dB" id="vB"></div></div>
+  </section>
+  <section id="draft-c" role="tabpanel" aria-labelledby="t-c" hidden>
+    <div class="note"><strong>C. 위젯 보드</strong><span>검은 바탕 위 흰 보드에 둥근 위젯을 배치. 메인 프롬프트는 음악 플레이어처럼 ‘지금 복사할 프롬프트’로, 의상은 앨범 스크롤로 보여줘요.</span></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>zzon.64bit.kr/#/</span></div><div class="dC" id="vC"></div></div>
+  </section>
+  <section id="draft-d" role="tabpanel" aria-labelledby="t-d" hidden>
+    <div class="note"><strong>D. 사이드바 매거진</strong><span>왼쪽 아이콘 메뉴, 뒤에 깔린 회색 대형 글자, 세로로 세운 OUTFIT. 의상 카드는 바코드가 있는 티켓 모양이에요.</span></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>zzon.64bit.kr/#/</span></div><div class="dD" id="vD"></div></div>
+  </section>
+  <section id="draft-e" role="tabpanel" aria-labelledby="t-e" hidden>
+    <div class="note"><strong>E. 카세트 클럽</strong><span>좁고 큰 그로테스크 제목과 기울어진 카세트테이프. 메인 프롬프트가 테이프 라벨에 적혀 있고, 의상은 트랙 목록처럼 번호가 붙어요.</span></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>zzon.64bit.kr/#/</span></div><div class="dE" id="vE"></div></div>
+  </section>
+  <section id="draft-f" role="tabpanel" aria-labelledby="t-f" hidden>
+    <div class="note"><strong>F. 레코드 슬리브</strong><span>돌아가는 LP 위에 종이 슬리브, 픽셀 폰트 제목. 아래는 연필 필기체가 번진 듯한 분위기에 의상이 편지 봉투처럼 흩어져 있어요.</span></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>zzon.64bit.kr/#/</span></div><div class="dF" id="vF"></div></div>
+  </section>
+</main>
+
+<div class="ov" id="ov" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" id="sheet"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+/* ---------- 예시 의상 그림 (실제 사진으로 바뀔 자리) ---------- */
+var S={
+jacket:'<path d="M62 42 86 30l14 24 14-24 24 12 30 30 14 110-26 4-8-70v120H52V112l-8 70-26-4 14-110Z" fill="#161616"/><path d="M100 54 96 232M86 30l-12 62 26-38M114 30l12 62-26-38M58 150h22M120 150h22" stroke="#f2f2f2" stroke-width="2.4" fill="none"/><circle cx="70" cy="200" r="3" fill="#ddd"/><circle cx="130" cy="200" r="3" fill="#ddd"/>',
+skirt:'<rect x="62" y="56" width="76" height="14" fill="#161616"/><path d="M62 70h76l8 40H54Z" fill="#2a2a2a"/><path d="M54 110h92l10 46q-8 8-16 0-8 8-16 0-8 8-16 0-8 8-16 0-8 8-16 0-8 8-16 0-8 8-14 0Z" fill="#161616"/><path d="M56 112q6 6 12 0t12 0 12 0 12 0 12 0 12 0 12 0 12 0" stroke="#eee" stroke-width="2" fill="none"/><path d="M48 160q7 8 14 0t14 0 14 0 14 0 14 0 14 0 14 0 14 0" stroke="#bbb" stroke-width="3" fill="none" stroke-dasharray="2 3"/>',
+dress:'<path d="M78 40v34M122 40v34" stroke="#161616" stroke-width="2.5"/><path d="M72 74h56l6 40 22 118q-56 12-112 0l22-118Z" fill="#1d1d1d"/><path d="M72 76q7 8 14 0t14 0 14 0 14 0M46 228q9 8 18 0t18 0 18 0 18 0 18 0 18 0" stroke="#e9e9e9" stroke-width="2.4" fill="none"/><path d="M86 120 96 226M114 120l-6 106" stroke="#444" stroke-width="1.4"/>',
+boots:'<path d="M54 30h36v150l30 26v26H48v-28l6-6Z" fill="#161616"/><path d="M108 40h36v140l30 26v26h-72v-28l6-6Z" fill="#2c2c2c"/><path d="M54 60h36M54 92h36M54 124h36M108 70h36M108 102h36M108 134h36" stroke="#d9d9d9" stroke-width="5"/><rect x="74" y="56" width="10" height="9" fill="none" stroke="#fff" stroke-width="2"/><rect x="74" y="88" width="10" height="9" fill="none" stroke="#fff" stroke-width="2"/><path d="M48 226h72M102 226h72" stroke="#888" stroke-width="5"/>',
+stripe:'<defs><pattern id="st" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="6" fill="#161616"/></pattern></defs><path d="M58 60q42 14 84 0l40 24-12 30-22-8v124H52V106l-22 8-12-30Z" fill="#fafafa" stroke="#161616" stroke-width="2"/><path d="M58 60q42 14 84 0l40 24-12 30-22-8v124H52V106l-22 8-12-30Z" fill="url(#st)"/>',
+cargo:'<path d="M64 36h72l10 196h-36l-10-130-10 130H54Z" fill="#3a3a3a"/><rect x="64" y="36" width="72" height="12" fill="#161616"/><rect x="52" y="120" width="26" height="30" fill="none" stroke="#e5e5e5" stroke-width="2"/><rect x="122" y="120" width="26" height="30" fill="none" stroke="#e5e5e5" stroke-width="2"/><path d="M60 182h30M112 182h30" stroke="#ddd" stroke-width="4"/>',
+coat:'<path d="M60 44q40-14 80 0l26 36 8 150h-30l-4-60v64H60v-64l-4 60H26l8-150Z" fill="#2d2d2d"/><g fill="#d6d6d6"><circle cx="66" cy="46" r="9"/><circle cx="80" cy="56" r="10"/><circle cx="94" cy="64" r="9"/><circle cx="134" cy="46" r="9"/><circle cx="120" cy="56" r="10"/><circle cx="106" cy="64" r="9"/><circle cx="30" cy="224" r="8"/><circle cx="170" cy="224" r="8"/></g><path d="M56 132h88" stroke="#111" stroke-width="7"/><rect x="92" y="126" width="16" height="12" fill="none" stroke="#ccc" stroke-width="2"/>',
+bag:'<path d="M62 120q38-110 76 0" fill="none" stroke="#9a9a9a" stroke-width="5" stroke-dasharray="7 4"/><rect x="48" y="116" width="104" height="80" rx="10" fill="#161616"/><path d="M48 140q52 26 104 0" stroke="#3a3a3a" stroke-width="2" fill="none"/><rect x="90" y="146" width="20" height="14" rx="2" fill="none" stroke="#e6e6e6" stroke-width="2.4"/><path d="M100 196v14m-6 8q6-6 6-6 0 0 6 6-6 6-6 6-6-6-6-6Z" stroke="#cfcfcf" stroke-width="2" fill="#cfcfcf"/>'
+};
+function svgUri(k){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260">'+S[k]+'</svg>');}
+
+var BASE={
+  main:{title:'기본 룩북 세팅',prompt:'full-body fashion editorial photo of a young Korean woman, Y2K grunge styling, monochrome film photography, 35mm grain, white studio backdrop, hard on-camera flash, scrapbook collage feel, magazine page layout --ar 3:4 --style raw'},
+  items:[
+    {id:'l1',title:'레더 바이커 재킷',tag:'OUTER',art:'jacket',prompt:'cropped black leather biker jacket with silver zippers and a studded belt, oversized shoulders, worn-in texture, styled over a white lace camisole, black and white flash photo, grainy film --ar 3:4'},
+    {id:'l2',title:'프릴 미니스커트',tag:'BOTTOM',art:'skirt',prompt:'tiered white ruffle mini skirt with lace hem, layered over black leggings, knee-high buckle boots, Y2K harajuku street style, full-body, soft monochrome --ar 3:4'},
+    {id:'l3',title:'레이스 슬립 드레스',tag:'DRESS',art:'dress',prompt:'black satin slip dress with lace trim and thin straps, layered over a fitted grey baby tee, chunky silver necklace, 90s grunge editorial, film grain --ar 3:4'},
+    {id:'l4',title:'버클 니하이 부츠',tag:'SHOES',art:'boots',prompt:'black knee-high platform boots with multiple silver buckles, close-up product shot on a concrete floor, harsh flash, high-contrast black and white --ar 4:5'},
+    {id:'l5',title:'스트라이프 니트 탑',tag:'TOP',art:'stripe',prompt:'fitted black and white striped long-sleeve knit top, off-shoulder, layered with arm warmers and low-rise denim, early 2000s mall fashion, candid snapshot --ar 3:4'},
+    {id:'l6',title:'와이드 카고 팬츠',tag:'BOTTOM',art:'cargo',prompt:'washed grey wide-leg cargo pants with oversized pockets and strap details, cropped zip hoodie, platform sneakers, street style full-body, monochrome --ar 3:4'},
+    {id:'l7',title:'퍼 트리밍 코트',tag:'OUTER',art:'coat',prompt:'long charcoal wool coat with faux fur collar and cuffs, belted waist, worn over a mini skirt and sheer tights, winter night street, flash photo, film grain --ar 3:4'},
+    {id:'l8',title:'체인 숄더백',tag:'BAG',art:'bag',prompt:'small black leather shoulder bag with a chunky silver chain strap and heart charm, still life on white crumpled paper, editorial product photo --ar 1:1'}
+  ]
+};
+
+/* ---------- 저장 (시안에서는 이 브라우저에만 저장) ---------- */
+var KEY='zzeori-draft-v1';
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.items)return s;}catch(e){}return {main:null,items:[]};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(user));return true;}catch(e){toast('저장 공간이 부족해요. 더 작은 이미지를 써 주세요.');return false;}}
+var user=load();
+function data(){return {main:user.main||BASE.main,items:user.items.concat(BASE.items)};}
+function find(id){return data().items.filter(function(i){return i.id===id;})[0];}
+function src(it){return it.img||svgUri(it.art);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad(n){return (n<10?'00':n<100?'0':'')+n;}
+function art(it,cls){return '<div class="art'+(it.img?'':' contain')+(cls?' '+cls:'')+'"><img src="'+src(it)+'" alt="'+esc(it.title)+'" loading="lazy"></div>';}
+
+/* ---------- 시안별 화면 ---------- */
+var R={};
+R.A=function(d){var m=d.main;return ''+
+'<div class="pg"><nav><span>ZZEORI · PROMPT ATELIER</span><ul><li>프롬프트</li><li>룩북</li><li>보관함</li></ul></nav>'+
+'<div class="head"><div><div class="logo">zzeori <i>×</i> prompt<small>never finished</small></div><div class="sub">COPY · PASTE · WEAR — 2026</div></div>'+
+'<div class="card"><h3>MAIN PROMPT / '+esc(m.title)+'</h3><p>'+esc(m.prompt)+'</p><div class="row"><span class="pen">눌러서 바로 복사</span><button class="btn" data-copy="main">COPY ⧉</button></div></div></div></div>'+
+'<div class="rings"></div>'+
+'<div class="pg"><div class="sech"><h2>LOOKBOOK</h2><p>사진을 누르면 그 옷을 만드는 프롬프트가 열려요. 새 룩은 마지막 칸에서 추가할 수 있어요.</p></div><div class="looks">'+
+d.items.map(function(it,i){return '<button class="pol" data-open="'+it.id+'">'+art(it)+'<span>LOOK '+(i+1)+' · '+esc(it.title)+'<small>'+esc(it.tag)+'</small></span></button>';}).join('')+
+'<button class="add" data-add><b>+</b>룩 추가하기</button></div></div>'+
+'<div class="rings"></div><div class="pg"><footer><span>ZZEORI Atelier</span><span>프롬프트 '+(d.items.length+1)+'개 보관 중</span><span>private · members only</span></footer></div>';};
+
+R.B=function(d){var m=d.main;var H='<i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>';return ''+
+'<div class="pg"><div class="menu"><ul><li>filter</li><li>effect</li><li>view</li><li class="on">window</li></ul><div class="bars"><i class="f" style="width:22px"></i><i style="width:150px"></i><i class="f" style="width:50px"></i></div></div>'+
+'<span class="rot">( prompt )</span>'+
+'<div class="hero"><div><div class="tag">'+esc(m.title)+'.txt <span>×</span></div><div class="sel">'+H+'<i class="h tm"></i><i class="h bm"></i><p class="prompt">'+esc(m.prompt)+'</p></div>'+
+'<div class="tb"><span class="box">Mono</span><span class="box">14</span><b>B</b><i>i</i><span>A</span><button data-copy="main">복사하기</button><button class="w" data-add>+ 추가</button></div></div>'+
+'<div class="side"><h2 class="big">PRO<br><span class="o">MPT</span></h2><div class="swatch"><div class="grad"><div></div><span>#141414</span></div><span style="font-size:14px">bon<br>appetit</span></div></div></div>'+
+'<div class="grid">'+d.items.map(function(it){return '<button class="it" data-open="'+it.id+'">'+art(it,'ht')+H+'<span class="nm">'+esc(it.title)+'<em>'+esc(it.tag.toLowerCase())+'.png</em></span></button>';}).join('')+
+'<button class="addt" data-add aria-label="의상 추가">+</button></div>'+
+'<div class="foot"><span class="dots">•••</span><div class="bars"><i class="f" style="width:110px"></i><i style="width:240px;max-width:40vw"></i><i style="width:30px"></i></div></div></div>';};
+
+R.C=function(d){var m=d.main;var now=new Date();var hh=now.getHours(),mm=now.getMinutes();var t=((hh%12)||12)+':'+(mm<10?'0':'')+mm+'<br>'+(hh<12?'AM':'PM');return ''+
+'<div class="board"><div class="w nav"><b>Prompt</b><span>Lookbook</span><span>Outer</span><span>Bottom</span><span>Shoes</span><b>Archive</b><span class="sp"></span><span>zzeori</span></div>'+
+'<div class="hello"><h2>What’s <b>*</b><br>new prompt?</h2></div>'+
+'<div class="w clock"><div class="t">'+t+'</div><div class="x"><b>Add some:</b><span>오늘 찾은 룩을 저장해 두세요.</span><button data-add>+ 추가</button></div></div>'+
+'<div class="w now"><div class="lbl"><span><i></i>Now copying · <b>'+esc(m.title)+'</b></span><span>01 / '+pad(d.items.length+1)+'</span></div><p>'+esc(m.prompt)+'</p><div class="track"></div><div class="ctl"><button aria-label="이전">◀◀</button><button class="play" data-copy="main">COPY</button><button aria-label="다음">▶▶</button></div></div>'+
+'<div class="disc"><div class="c"></div><span class="pill">new item</span></div>'+
+'<div class="w alb"><div class="hd"><b>from the outfit album</b><span>‹ 옆으로 넘겨 보기 ›</span></div><div class="strip">'+
+d.items.map(function(it){return '<button class="ph" data-open="'+it.id+'">'+art(it)+'<span>'+esc(it.title)+' <small>'+esc(it.tag)+'</small></span></button>';}).join('')+
+'<button class="ph add" data-add><div class="art">+</div><span>새 룩</span></button></div></div>'+
+'<span class="tabside"><b>zzeori</b> original prompt</span><span class="arrow">↗</span></div>';};
+
+R.D=function(d){var m=d.main;return ''+
+'<div class="topb"><span>ZZEORI PROMPT</span><i></i><span>ARCHIVE 2026</span></div>'+
+'<div class="lay"><div class="sb"><a href="#draft-d"><i></i>HOME</a><a href="#draft-d"><i></i>PROMPT</a><a href="#draft-d"><i></i>LOOKBOOK</a><span class="chip">ALL</span></div>'+
+'<div><div class="hero"><h2 class="ghost">PROM<span>PT</span></h2><div class="mainbox"><div class="lb"><span>MAIN PROMPT ›</span><span>'+esc(m.title)+'</span></div><p>'+esc(m.prompt)+'</p><div class="pillrow"><button class="pill k" data-copy="main">복사하기</button><button class="pill" data-add>+ 추가</button><span class="pill" style="background:#9b9b9b">Y2K</span><span class="pill" style="background:#9b9b9b">GRUNGE</span></div></div></div>'+
+'<div class="sec"><h3 class="vert">OUTFIT</h3><div class="list">'+
+d.items.map(function(it,i){return '<button class="tk" data-open="'+it.id+'"><span class="no">'+pad(i+1)+'.</span>'+art(it)+'<b>'+esc(it.title)+'</b><span class="bc"></span></button>';}).join('')+
+'<button class="tk add" data-add>+ 룩 추가</button></div></div></div>'+
+'<div class="rs"><button>Search</button><button data-add>Add</button><button data-copy="main">Copy</button></div></div>'+
+'<footer><span>2026</span><span>zzeori_prompt</span><span>archive</span></footer>';};
+
+R.E=function(d){var m=d.main;return ''+
+'<div class="pg"><div class="tl"><span class="go">[ COPY! ]</span><span class="c">YOU ARE IN THE<br><u>PROMPT STUDIO</u></span><span class="r">#SINCE<br>2026</span></div>'+
+'<div class="xs"><span>×</span><span>×</span><span>×</span><span>×</span><span>×</span><span>×</span></div>'+
+'<div class="hero"><div><h2>ZZEO<br>RI<br><span>PROM</span><br>PT</h2><div class="ctl"><button class="k" data-copy="main">COPY</button><button data-add>+</button><span style="font-size:11px">FASHION, FASHION!</span></div></div>'+
+'<div class="tape"><svg viewBox="0 0 420 280" aria-hidden="true"><path d="M300 30q60-40 90 0t-10 70" fill="none" stroke="#111" stroke-width="6"/><rect x="10" y="40" width="400" height="230" rx="16" fill="#1b1b1b"/><rect x="40" y="64" width="340" height="120" rx="8" fill="#2c2c2c"/><circle cx="130" cy="124" r="30" fill="#f2f2f2"/><circle cx="290" cy="124" r="30" fill="#f2f2f2"/><circle cx="130" cy="124" r="11" fill="#1b1b1b"/><circle cx="290" cy="124" r="11" fill="#1b1b1b"/><rect x="170" y="104" width="80" height="40" fill="#555"/><g fill="#888"><circle cx="28" cy="58" r="5"/><circle cx="392" cy="58" r="5"/><circle cx="28" cy="252" r="5"/><circle cx="392" cy="252" r="5"/><circle cx="210" cy="250" r="5"/></g><text x="60" y="100" fill="#fff" font-family="Archivo" font-weight="800" font-size="22">26</text></svg>'+
+'<div class="lab"><b>'+esc(m.title)+'</b><i>A</i></div></div></div>'+
+'<p class="ptext">'+esc(m.prompt)+'</p>'+
+'<div class="side"><span class="arr">▶▶▶</span><div class="ap"><b>TRACKLIST</b><span>SIDE A · '+d.items.length+' LOOKS</span></div></div>'+
+'<div class="tracks">'+d.items.map(function(it,i){return '<button class="tr" data-open="'+it.id+'">'+art(it)+'<span class="j"><em>'+pad(i+1)+'</em><span>'+esc(it.title)+'</span></span></button>';}).join('')+
+'<button class="tr add" data-add><div class="art">+</div><span class="j"><em>NEW</em><span>룩 추가</span></span></button></div>'+
+'<button class="join" data-add>ADD YOUR PROMPT +</button></div>';};
+
+R.F=function(d){var m=d.main;return ''+
+'<div class="pg"><span class="yr">2026</span><div class="top3"><div><h2 class="chrome">PROMPT!!</h2><div class="cur">Currently copying.<span>'+esc(m.title)+'</span></div><div class="seg"><button data-copy="main">Copy</button><button data-add>Add</button></div></div>'+
+'<div class="mid"><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><br>ESTIMATED LOOKS · '+pad(d.items.length)+'<br>BY ZZEORI</div>'+
+'<div class="rt"><b>My ( safe ) closet</b><span class="n">+'+d.items.length+' looks</span><small>outer, dress, bottom, shoes, bag<br>+ more</small></div></div>'+
+'<div class="stage"><div class="vinyl"></div><div class="sleeve"><h2>ZZEORI’S PROMPT<br>OUTFIT EDITION</h2><p>'+esc(m.prompt)+'</p><div class="bt"><span>ett</span><button data-add>Add</button><button class="k" data-copy="main">Copy</button><span>ett</span></div><span class="stick" aria-hidden="true">z</span></div></div>'+
+'<p class="script" aria-hidden="true">never finished</p>'+
+'<div class="env">'+d.items.map(function(it){return '<button class="lt" data-open="'+it.id+'">'+art(it)+'<span><b>'+esc(it.title)+'</b> · '+esc(it.tag.toLowerCase())+'</span></button>';}).join('')+
+'<button class="lt add" data-add><div class="art">add</div><span><b>새 룩</b> 보내기</span></button></div>'+
+'<div class="names"><b>{</b><div>'+d.items.map(function(it){return '<span>'+esc(it.title)+'</span>';}).join('')+'</div><b>}</b></div></div>';};
+
+function render(){var d=data();['A','B','C','D','E','F'].forEach(function(k){document.getElementById('v'+k).innerHTML=R[k](d);});}
+
+/* ---------- 복사 ---------- */
+var tt;function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true;},1800);}
+function copy(text,btn){
+  function ok(){toast('프롬프트를 복사했어요');if(btn){btn.classList.remove('copy-ok');void btn.offsetWidth;btn.classList.add('copy-ok');}}
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();var done=false;try{done=document.execCommand('copy');}catch(e){}document.body.removeChild(ta);if(done)ok();else toast('복사가 막혀 있어요. 글자를 길게 눌러 직접 복사해 주세요.');}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok,fallback);}else fallback();
+}
+
+/* ---------- 팝업 ---------- */
+var ov=document.getElementById('ov'),sheet=document.getElementById('sheet'),lastFocus=null;
+function openSheet(html){lastFocus=document.activeElement;sheet.innerHTML='<button class="x" data-close aria-label="닫기">×</button>'+html;ov.hidden=false;var f=sheet.querySelector('input,textarea,.bk');(f||sheet.querySelector('.x')).focus();}
+function closeSheet(){ov.hidden=true;sheet.innerHTML='';if(lastFocus&&lastFocus.focus)lastFocus.focus();}
+function openItem(id){var it=find(id);if(!it)return;
+  openSheet('<div class="view">'+art(it)+'<div class="bd"><span class="tg">'+esc(it.tag)+'</span><h3 id="sheet-title">'+esc(it.title)+'</h3><pre id="pv-text">'+esc(it.prompt)+'</pre><div class="act"><button class="bk" data-copy="'+it.id+'">프롬프트 복사</button>'+(it.user?'<button class="bk del" data-del="'+it.id+'">삭제</button>':'')+'<button class="bk w" data-close>닫기</button></div></div></div>');}
+var pendingImg=null;
+function openAdd(){pendingImg=null;
+  openSheet('<form class="form" id="addf" novalidate><h3 id="sheet-title">프롬프트 추가</h3>'+
+  '<div class="seg" role="radiogroup" aria-label="종류"><label><input type="radio" name="kind" id="k-look" value="look" checked>의상 이미지 + 프롬프트</label><label><input type="radio" name="kind" id="k-main" value="main">메인 프롬프트 바꾸기</label></div>'+
+  '<div class="two"><label for="f-title">제목<input type="text" id="f-title" maxlength="40" placeholder="예: 체크 플리츠 스커트"></label><label for="f-tag" id="tagwrap">분류<select id="f-tag"><option>OUTER</option><option>TOP</option><option>BOTTOM</option><option>DRESS</option><option>SHOES</option><option>BAG</option><option>ETC</option></select></label></div>'+
+  '<label for="f-prompt">프롬프트<textarea id="f-prompt" placeholder="복사해서 쓸 프롬프트를 붙여 넣으세요"></textarea></label>'+
+  '<div id="imgwrap"><label for="f-img">의상 이미지</label><div class="drop"><div class="pv" id="f-pv">미리보기</div><div><input type="file" id="f-img" accept="image/*"><p class="hint">사진은 자동으로 줄여서 저장해요. 흑백 필터는 화면에서만 적용돼요.</p></div></div></div>'+
+  '<p class="err" id="f-err" role="alert"></p><div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="bk w" data-close>취소</button><button type="submit" class="bk">저장하기</button></div></form>');
+  var f=document.getElementById('addf');
+  f.addEventListener('change',function(e){
+    if(e.target.name==='kind'){var main=e.target.value==='main';document.getElementById('imgwrap').hidden=main;document.getElementById('tagwrap').hidden=main;}
+    if(e.target.id==='f-img'&&e.target.files[0])readImg(e.target.files[0]);
+  });
+  f.addEventListener('submit',function(e){e.preventDefault();
+    var kind=f.querySelector('input[name=kind]:checked').value,title=document.getElementById('f-title').value.trim(),pr=document.getElementById('f-prompt').value.trim(),err=document.getElementById('f-err');
+    if(!title||!pr){err.textContent='제목과 프롬프트를 모두 적어 주세요.';return;}
+    if(kind==='main'){user.main={title:title,prompt:pr};}
+    else{if(!pendingImg){err.textContent='의상 이미지를 골라 주세요.';return;}
+      user.items.unshift({id:'u'+Date.now(),title:title,tag:document.getElementById('f-tag').value,prompt:pr,img:pendingImg,user:true});}
+    if(!save()){if(kind==='look')user.items.shift();return;}
+    render();closeSheet();toast(kind==='main'?'메인 프롬프트를 바꿨어요':'새 룩을 추가했어요');
+  });
+}
+function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var max=640,s=Math.min(1,max/Math.max(im.width,im.height));var c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);pendingImg=c.toDataURL('image/jpeg',.82);document.getElementById('f-pv').innerHTML='<img src="'+pendingImg+'" alt="선택한 이미지">';};im.src=r.result;};r.readAsDataURL(file);}
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-copy],[data-open],[data-add],[data-close],[data-del]');
+  if(e.target===ov){closeSheet();return;}
+  if(!t)return;
+  if(t.hasAttribute('data-copy')){var k=t.getAttribute('data-copy');copy(k==='main'?data().main.prompt:find(k).prompt,t);}
+  else if(t.hasAttribute('data-open'))openItem(t.getAttribute('data-open'));
+  else if(t.hasAttribute('data-add'))openAdd();
+  else if(t.hasAttribute('data-close'))closeSheet();
+  else if(t.hasAttribute('data-del')){var id=t.getAttribute('data-del');user.items=user.items.filter(function(i){return i.id!==id;});save();render();closeSheet();toast('삭제했어요');}
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!ov.hidden)closeSheet();});
+document.getElementById('reset').addEventListener('click',function(){user={main:null,items:[]};save();render();toast('예시 상태로 되돌렸어요');});
+
+/* ---------- 탭 ---------- */
+var tabs=[].slice.call(document.querySelectorAll('.tabs button'));
+function show(k,push){if('abcdef'.indexOf(k)<0||!k)k='a';tabs.forEach(function(b){var on=b.dataset.k===k;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;document.getElementById('draft-'+b.dataset.k).hidden=!on;});if(push)history.replaceState(null,'','#draft-'+k);}
+tabs.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.k,true);window.scrollTo({top:0});});});
+document.querySelector('.tabs').addEventListener('keydown',function(e){var i=tabs.indexOf(document.activeElement);if(i<0||(e.key!=='ArrowRight'&&e.key!=='ArrowLeft'))return;e.preventDefault();var n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];n.focus();show(n.dataset.k,true);});
+function fromHash(){show((location.hash.match(/^#draft-([a-f])$/)||[])[1],false);}
+window.addEventListener('hashchange',fromHash);
+document.querySelectorAll('.frame').forEach(function(f){f.addEventListener('click',function(e){var a=e.target.closest('a');if(a)e.preventDefault();});});
+
+/* ---------- 토큰 입장 (시안용: 실제 사이트는 서버에서 확인해야 함) ---------- */
+var gate=document.getElementById('gate'),gform=document.getElementById('gform');
+function unlocked(){try{return sessionStorage.getItem('zz-ok')==='1';}catch(e){return false;}}
+function setGate(){gate.hidden=unlocked();if(!gate.hidden)setTimeout(function(){document.getElementById('gtoken').focus();},50);}
+gform.addEventListener('submit',function(e){e.preventDefault();var v=document.getElementById('gtoken').value.trim();
+  if(v==='zzeori2026'){try{sessionStorage.setItem('zz-ok','1');}catch(x){}gate.hidden=true;document.getElementById('gerr').textContent='';}
+  else{document.getElementById('gerr').textContent=v?'토큰이 맞지 않아요. 받은 토큰을 다시 확인해 주세요.':'토큰을 입력해 주세요.';gform.classList.remove('shake');void gform.offsetWidth;gform.classList.add('shake');}
+});
+document.getElementById('lock').addEventListener('click',function(){try{sessionStorage.removeItem('zz-ok');}catch(e){}document.getElementById('gtoken').value='';setGate();});
+
+render();fromHash();setGate();
+})();
+</script>
