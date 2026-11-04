@@ -42,7 +42,7 @@ function loginPage(message, status) {
   const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>쩌리 프롬프트</title>
+<title>R♡M</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+KR:wght@400;500&display=swap">
 <style>
 :root{--bg:#fff;--ink:#111;--mute:#7a7a7a;--err:#a12a2a}
@@ -60,7 +60,7 @@ button{border:0;background:var(--ink);color:var(--bg);padding:0 18px;font-size:1
 .err{color:var(--err);font-family:"Noto Sans KR",sans-serif;font-size:13px;min-height:1.2em}
 </style></head><body><main class="box">
 <div class="menu"><span>file</span><span>open</span><span class="on">token</span></div>
-<h1>PRO<br>MPT</h1>
+<h1>R♡M</h1>
 <p>초대받은 사람만 볼 수 있는 프롬프트 보관함이에요. 받은 토큰을 입력해 주세요.</p>
 <form method="post" action="/__login" autocomplete="off">
 <i class="h" style="top:-5px;left:-5px"></i><i class="h" style="top:-5px;right:-5px"></i><i class="h" style="bottom:-5px;left:-5px"></i><i class="h" style="bottom:-5px;right:-5px"></i>
