@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
 /* Layout: 그래픽 툴 화면 같은 한 장짜리 페이지.
-   위: 메뉴 바 → 기본 룩북 세팅(여캐·남캐) 텍스트 박스 두 개 + 큰 PROMPT 타이포
+   위: 메뉴 바 → 기본 룩북 세팅(남캐·여캐, 제복 단락 포함) 텍스트 박스 두 개 + 큰 PROMPT 타이포
    가운데: 캐릭터 섹션 버튼(신드롬 / 리아)
    아래: 선택한 캐릭터의 의상 그리드 → 누르면 프롬프트 팝업
    흑백 하프톤 톤으로 고정한 단일 밝은 테마. */
@@ -140,20 +140,30 @@ img{display:block;max-width:100%}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;font-size:14px;z-index:60;font-family:var(--kr)}
 .pop{animation:pop .3s}@keyframes pop{50%{transform:scale(1.06)}}
 
-/* 토큰 입장 화면 */
-.gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;overflow:auto;
-  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.gbox{width:min(460px,100%);display:flex;flex-direction:column;gap:18px}
-.gbox .big{font-size:clamp(64px,16vw,110px)}
-.gbox p{margin:0;font-size:14px;line-height:1.6;color:var(--ink2);font-family:var(--kr)}
-.gform{position:relative;border:1px solid var(--line);padding:6px;display:flex;gap:6px}
-.gform input{flex:1;min-width:0;border:0;font-family:var(--mono);font-size:15px;padding:10px;background:transparent}
-.gform input:focus{outline:none}
-.gform:focus-within{box-shadow:4px 4px 0 var(--ink)}
-.gform button{border:0;background:var(--ink);color:var(--bg);padding:0 18px;font-size:14px}
-.gerr{color:var(--err);font-size:13px;min-height:1.2em;font-family:var(--kr)}
-.demo{font-family:var(--mono);font-size:12px;color:var(--mute);border-top:1px dashed var(--line);padding-top:12px}
-.shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* 제복 단락 */
+.prompt+.prompt{margin-top:14px}
+.prompt.u{padding-top:14px;border-top:1px dashed var(--line)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.btn.tg2{background:var(--bg);color:var(--ink)}
+/* 팝업 안 섹션별 프롬프트 */
+.pbox{border:1px solid var(--line);position:relative;padding:14px}
+.pbox .prompt{font-size:13.5px}
+.vh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.vh b{font-size:15px;font-family:var(--kr)}
+.vh .btns{display:flex;gap:6px}
+.opts{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--kr);font-size:14px}
+.opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.opts input{width:16px;height:16px;accent-color:#111;margin:0}
+/* 폼: 섹션 행 */
+.srows{display:flex;flex-direction:column;gap:12px}
+.srow{border:1px dashed var(--line);padding:10px;display:flex;flex-direction:column;gap:8px}
+.srow .top2{display:flex;gap:8px;align-items:center}
+.srow .top2 input{flex:1;min-width:0}
+.srow textarea{min-height:90px}
+.srow .rm{border:1px solid var(--line);background:var(--bg);width:34px;height:38px;flex:none}
+.addsec{align-self:flex-start}
+.lk{display:inline-flex;align-items:center;border:1px solid var(--line);height:22px;padding:0 10px;font-size:12px;text-decoration:none;color:var(--ink)}
+.mode{font-family:var(--mono);font-size:11px;color:var(--mute)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -161,25 +171,10 @@ img{display:block;max-width:100%}
 </head>
 <body>
 <!--BODY-START-->
-<div class="gate" id="gate">
-  <div class="gbox">
-    <div class="menu" style="padding:0"><ul><li>file</li><li>open</li><li class="on">token</li></ul></div>
-    <h1 class="big">PRO<br><span class="o">MPT</span></h1>
-    <p>초대받은 사람만 볼 수 있는 프롬프트 보관함이에요. 받은 토큰을 입력해 주세요.</p>
-    <form class="gform" id="gform" autocomplete="off">
-      <i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>
-      <label for="gtoken" class="sr">토큰</label>
-      <input id="gtoken" type="password" placeholder="토큰 입력" spellcheck="false">
-      <button type="submit">입장</button>
-    </form>
-    <div class="gerr" id="gerr" role="alert"></div>
-  </div>
-</div>
-
 <div class="wrap" id="app">
   <div class="menu">
     <ul><li>filter</li><li>effect</li><li>view</li><li class="on">window</li></ul>
-    <div class="bars"><i class="f" style="width:22px"></i><i style="width:clamp(60px,14vw,150px)"></i><button type="button" data-add>+ 추가</button><button type="button" id="lock">잠그기</button></div>
+    <div class="bars"><i class="f" style="width:22px"></i><i style="width:clamp(60px,14vw,150px)"></i><button type="button" data-add>+ 추가</button><a class="lk" id="lock" href="/__logout" hidden>나가기</a></div>
   </div>
   <span class="rot">( prompt )</span>
 
@@ -222,53 +217,78 @@ bag:'<path d="M62 120q38-110 76 0" fill="none" stroke="#9a9a9a" stroke-width="5"
 function svgUri(k){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260">'+S[k]+'</svg>');}
 
 var CHARS={syndrome:'신드롬',ria:'리아'};
+function S3(full,upper,noshoes){var s=[{label:'전체',prompt:full}];if(upper)s.push({label:'상반신만',prompt:upper});if(noshoes)s.push({label:'신발없이',prompt:noshoes});return s;}
+/* 처음 상태 (서버에 아무것도 없을 때 이 내용으로 시작) */
 var BASE={
   mains:[
-    {id:'f',label:'여캐',title:'기본 룩북 세팅',prompt:'full-body fashion editorial photo of a young Korean woman, Y2K grunge styling, monochrome film photography, 35mm grain, white studio backdrop, hard on-camera flash, scrapbook collage feel, magazine page layout --ar 3:4 --style raw'},
-    {id:'m',label:'남캐',title:'기본 룩북 세팅',prompt:'full-body fashion editorial photo of a young Korean man, Y2K grunge styling, monochrome film photography, 35mm grain, white studio backdrop, hard on-camera flash, relaxed slouchy pose, magazine page layout --ar 3:4 --style raw'}
+    {id:'m',label:'남캐',title:'기본 룩북 세팅',prompt:'handsome male, age up, athletic build, v-shaped face, 2::ash brown hair,wolf cut, curtained bangs, face-framing strands::, 0.7::messy hair::, black eyes, tareme, 0.5::half-lidded eyes::, expressionless,',
+      uniform:'military uniform, black double-breasted officer jacket, gold buttons, epaulettes, white gloves, black peaked cap, black trousers, leather belt,'},
+    {id:'f',label:'여캐',title:'기본 룩북 세팅',prompt:'girl, cute face, large bust, left-side hair intake, sky blue eyes, dark brown hair, long hair,  low side ponytail, white ribbon, straight bangs, voluminous wavy hair, tareme, round eyes, soft smile, -1::parted bangs::,',
+      uniform:'school uniform, navy sailor collar blouse, red ribbon tie, pleated navy skirt, white knee socks, brown loafers,'}
   ],
   items:[
-    {id:'s1',char:'syndrome',title:'레더 바이커 재킷',tag:'OUTER',art:'jacket',prompt:'cropped black leather biker jacket with silver zippers and a studded belt, oversized shoulders, worn-in texture, black and white flash photo, grainy film --ar 3:4'},
-    {id:'s2',char:'syndrome',title:'와이드 카고 팬츠',tag:'BOTTOM',art:'cargo',prompt:'washed grey wide-leg cargo pants with oversized pockets and strap details, cropped zip hoodie, platform sneakers, street style full-body, monochrome --ar 3:4'},
-    {id:'s3',char:'syndrome',title:'퍼 트리밍 코트',tag:'OUTER',art:'coat',prompt:'long charcoal wool coat with faux fur collar and cuffs, belted waist, winter night street, flash photo, film grain --ar 3:4'},
-    {id:'s4',char:'syndrome',title:'버클 부츠',tag:'SHOES',art:'boots',prompt:'black platform boots with multiple silver buckles, close-up product shot on a concrete floor, harsh flash, high-contrast black and white --ar 4:5'},
-    {id:'r1',char:'ria',title:'프릴 미니스커트',tag:'BOTTOM',art:'skirt',prompt:'tiered white ruffle mini skirt with lace hem, layered over black leggings, knee-high buckle boots, Y2K harajuku street style, full-body, soft monochrome --ar 3:4'},
-    {id:'r2',char:'ria',title:'레이스 슬립 드레스',tag:'DRESS',art:'dress',prompt:'black satin slip dress with lace trim and thin straps, layered over a fitted grey baby tee, chunky silver necklace, 90s grunge editorial, film grain --ar 3:4'},
-    {id:'r3',char:'ria',title:'스트라이프 니트 탑',tag:'TOP',art:'stripe',prompt:'fitted black and white striped long-sleeve knit top, off-shoulder, layered with arm warmers and low-rise denim, early 2000s mall fashion, candid snapshot --ar 3:4'},
-    {id:'r4',char:'ria',title:'체인 숄더백',tag:'BAG',art:'bag',prompt:'small black leather shoulder bag with a chunky silver chain strap and heart charm, still life on white crumpled paper, editorial product photo --ar 1:1'}
+    {id:'s1',char:'syndrome',title:'레더 바이커 재킷',tag:'OUTER',art:'jacket',sections:S3('black leather biker jacket, silver zippers, studded belt, white t-shirt, black slim pants, black combat boots, full body,','black leather biker jacket, silver zippers, white t-shirt, upper body, cowboy shot,','black leather biker jacket, silver zippers, studded belt, white t-shirt, black slim pants, barefoot, no shoes,')},
+    {id:'s2',char:'syndrome',title:'와이드 카고 팬츠',tag:'BOTTOM',art:'cargo',sections:S3('grey cropped zip hoodie, washed grey wide cargo pants, strap details, platform sneakers, full body,','grey cropped zip hoodie, hood down, silver chain necklace, upper body,','grey cropped zip hoodie, washed grey wide cargo pants, strap details, barefoot, no shoes,')},
+    {id:'s3',char:'syndrome',title:'퍼 트리밍 코트',tag:'OUTER',art:'coat',sections:S3('long charcoal wool coat, faux fur collar, fur cuffs, belted waist, black turtleneck, black boots, full body,','long charcoal wool coat, faux fur collar, black turtleneck, upper body,','long charcoal wool coat, faux fur collar, belted waist, black trousers, barefoot, no shoes,')},
+    {id:'s4',char:'syndrome',title:'버클 부츠',tag:'SHOES',art:'boots',sections:S3('black platform boots, multiple silver buckles, knee-high,')},
+    {id:'r1',char:'ria',title:'프릴 미니스커트',tag:'BOTTOM',art:'skirt',sections:S3('white off-shoulder blouse, tiered white ruffle mini skirt, lace hem, black thighhighs, mary janes, full body,','white off-shoulder blouse, lace trim, ribbon choker, upper body,','white off-shoulder blouse, tiered white ruffle mini skirt, lace hem, black thighhighs, barefoot, no shoes,')},
+    {id:'r2',char:'ria',title:'레이스 슬립 드레스',tag:'DRESS',art:'dress',sections:S3('black satin slip dress, lace trim, thin straps, grey cardigan, silver necklace, black heels, full body,','black satin slip dress, lace trim, thin straps, silver necklace, upper body,','black satin slip dress, lace trim, thin straps, grey cardigan, barefoot, no shoes,')},
+    {id:'r3',char:'ria',title:'스트라이프 니트 탑',tag:'TOP',art:'stripe',sections:S3('black and white striped knit top, off-shoulder, arm warmers, low-rise denim shorts, sneakers, full body,','black and white striped knit top, off-shoulder, arm warmers, upper body,','black and white striped knit top, off-shoulder, low-rise denim shorts, barefoot, no shoes,')},
+    {id:'r4',char:'ria',title:'체인 숄더백',tag:'BAG',art:'bag',sections:S3('small black leather shoulder bag, chunky silver chain strap, heart charm,')}
   ]
 };
+function clone(o){return JSON.parse(JSON.stringify(o));}
 
-/* ---------- 저장: 지금은 이 브라우저에만 저장 (서버 저장소로 바꿀 자리) ---------- */
-var KEY='zzeori-site-v1';
+/* ---------- 저장소
+   yujin.64bit.kr(Cloudflare Pages)에서는 서버(/api)에 저장해서 모두가 같은 내용을 봐요.
+   서버가 없는 곳(미리보기, 파일로 열기)에서는 이 브라우저에만 저장해요. ---------- */
+var LKEY='zzeori-site-v2';
 var Store={
-  load:function(){try{var s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.items)return s;}catch(e){}return {mains:{},items:[]};},
-  save:function(u){try{localStorage.setItem(KEY,JSON.stringify(u));return true;}catch(e){toast('저장 공간이 부족해요. 더 작은 이미지를 써 주세요.');return false;}}
+  server:false,
+  init:function(){
+    return fetch('/api/state',{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(s){Store.server=true;return s&&s.items?s:null;})
+      .catch(function(){Store.server=false;try{var s=JSON.parse(localStorage.getItem(LKEY)||'null');if(s&&s.items)return s;}catch(e){}return Store.migrate();});
+  },
+  migrate:function(){try{var o=JSON.parse(localStorage.getItem('zzeori-site-v1')||'null');if(o&&o.items&&o.items.length){var s=clone(BASE);o.items.forEach(function(i){if(i.user)s.items.unshift({id:i.id,char:i.char,title:i.title,tag:i.tag,img:i.img,sections:[{label:'전체',prompt:i.prompt}]});});return s;}}catch(e){}return null;},
+  save:function(st){
+    if(Store.server)return fetch('/api/state',{method:'PUT',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(st)}).then(function(r){if(!r.ok)throw new Error('save');});
+    try{localStorage.setItem(LKEY,JSON.stringify(st));return Promise.resolve();}catch(e){return Promise.reject(new Error('quota'));}
+  },
+  putImage:function(dataUrl){
+    if(!Store.server)return Promise.resolve(dataUrl);
+    return fetch('/api/img',{method:'POST',credentials:'same-origin',headers:{'content-type':'text/plain'},body:dataUrl}).then(function(r){if(!r.ok)throw new Error('img');return r.json();}).then(function(j){return j.url;});
+  },
+  dropImage:function(url){if(Store.server&&url&&url.indexOf('/api/img/')===0)fetch(url,{method:'DELETE',credentials:'same-origin'}).catch(function(){});}
 };
-var user=Store.load(); if(!user.mains)user.mains={};
-var cur='syndrome';
+var state=clone(BASE);
+var cur='syndrome',uniOpen={};
 
-function mains(){return BASE.mains.map(function(m){var o=user.mains[m.id];return o?{id:m.id,label:m.label,title:o.title,prompt:o.prompt}:m;});}
-function items(){return user.items.concat(BASE.items);}
-function find(id){return items().filter(function(i){return i.id===id;})[0];}
-function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function art(it){return '<div class="art'+(it.img?'':' contain')+'"><img src="'+(it.img||svgUri(it.art))+'" alt="'+esc(it.title)+'" loading="lazy"></div>';}
+function find(id){return state.items.filter(function(i){return i.id===id;})[0];}
+function main(id){return state.mains.filter(function(m){return m.id===id;})[0];}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function art(it){return '<div class="art'+(it.img?'':' contain')+'"><img src="'+esc(it.img||svgUri(it.art||'jacket'))+'" alt="'+esc(it.title)+'" loading="lazy"></div>';}
 var H4='<i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>';
 
+function persist(msg){return Store.save(state).then(function(){render();if(msg)toast(msg);return true;},function(e){toast(e&&e.message==='quota'?'저장 공간이 부족해요. 더 작은 이미지를 써 주세요.':'저장하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');return false;});}
+
 function render(){
-  document.getElementById('mains').innerHTML=mains().map(function(m){return ''+
+  document.getElementById('mains').innerHTML=state.mains.map(function(m){var open=!!uniOpen[m.id];return ''+
     '<div class="doc"><div class="tab"><b>'+esc(m.title)+' · '+m.label+'</b><span>'+(m.id==='f'?'female':'male')+'.txt</span></div>'+
-    '<div class="sel">'+H4+'<i class="h tm"></i><i class="h bm"></i><p class="prompt">'+esc(m.prompt)+'</p></div>'+
-    '<div class="tb"><span class="box">Mono</span><span class="box">14</span><b>B</b><i>i</i><span>A</span><button class="btn" data-copy="main:'+m.id+'">'+m.label+' 복사하기</button><button class="btn w" data-edit="'+m.id+'">수정</button></div></div>';}).join('');
-  var all=items(),n={syndrome:0,ria:0};all.forEach(function(i){n[i.char]=(n[i.char]||0)+1;});
+    '<div class="sel" id="box-'+m.id+'">'+H4+'<i class="h tm"></i><i class="h bm"></i><p class="prompt">'+esc(m.prompt)+'</p>'+
+    (open?'<p class="prompt u">'+esc(m.uniform||'(아직 제복 프롬프트가 없어요. 수정에서 넣어 주세요.)')+'</p>':'')+'</div>'+
+    '<div class="tb"><span class="box">Mono</span><span class="box">14</span><b>B</b><i>i</i><span>A</span><button class="btn tg2" data-uni="'+m.id+'" aria-pressed="'+open+'" aria-controls="box-'+m.id+'">제복</button>'+
+    (open?'<button class="btn w" data-copy="uni:'+m.id+'">COPY</button><button class="btn" data-copy="full:'+m.id+'">FULL COPY</button>':'<button class="btn" data-copy="main:'+m.id+'">'+m.label+' 복사하기</button>')+
+    '<button class="btn w" data-edit="'+m.id+'">수정</button></div></div>';}).join('');
+  var n={syndrome:0,ria:0},files=state.mains.length;state.items.forEach(function(i){n[i.char]=(n[i.char]||0)+1;files+=(i.sections||[]).length;});
   document.getElementById('n-syndrome').textContent=n.syndrome;document.getElementById('n-ria').textContent=n.ria;
-  document.getElementById('count').innerHTML='프롬프트<br><b>'+(all.length+2)+'</b> files';
-  var list=all.filter(function(i){return i.char===cur;});
-  document.getElementById('grid').innerHTML=list.map(function(it){return '<button class="it" data-open="'+it.id+'">'+art(it)+H4+'<span class="nm">'+esc(it.title)+'<em>'+esc(it.tag.toLowerCase())+'.png</em></span></button>';}).join('')+
-    (list.length?'':'<p class="empty">아직 '+CHARS[cur]+' 의상이 없어요. 오른쪽 + 칸에서 첫 의상을 추가해 보세요.</p>')+
+  document.getElementById('count').innerHTML='프롬프트<br><b>'+files+'</b> files<br><span class="mode">'+(Store.server?'shared':'this browser only')+'</span>';
+  var list=state.items.filter(function(i){return i.char===cur;});
+  document.getElementById('grid').innerHTML=list.map(function(it){return '<button class="it" data-open="'+esc(it.id)+'">'+art(it)+H4+'<span class="nm">'+esc(it.title)+'<em>'+(it.sections||[]).length+' sec · '+esc(String(it.tag).toLowerCase())+'</em></span></button>';}).join('')+
+    (list.length?'':'<p class="empty">아직 '+CHARS[cur]+' 의상이 없어요. + 칸에서 첫 의상을 추가해 보세요.</p>')+
     '<button class="addt" data-add="'+cur+'"><b>+</b>'+CHARS[cur]+' 의상 추가</button>';
   document.querySelectorAll('.cbtn').forEach(function(b){var on=b.dataset.char===cur;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;});
   document.getElementById('grid').setAttribute('aria-labelledby','c-'+cur);
+  document.getElementById('lock').hidden=!Store.server;
 }
 
 /* ---------- 복사 ---------- */
@@ -281,53 +301,91 @@ function copy(text,btn){
 
 /* ---------- 팝업 ---------- */
 var ov=document.getElementById('ov'),sheet=document.getElementById('sheet'),last=null;
-function openSheet(name,html){last=document.activeElement;sheet.innerHTML='<div class="bar"><span>'+name+'</span><button class="x" data-close aria-label="닫기">×</button></div>'+html;ov.hidden=false;var f=sheet.querySelector('input[type=text],textarea,.act .btn');(f||sheet.querySelector('.x')).focus();}
-function closeSheet(){ov.hidden=true;sheet.innerHTML='';if(last&&last.focus)last.focus();}
-function openItem(id){var it=find(id);if(!it)return;
-  openSheet(esc(it.tag.toLowerCase())+'.png — '+CHARS[it.char],'<div class="view">'+art(it)+'<div class="bd"><span class="tg">'+esc(it.tag)+' · '+CHARS[it.char]+'</span><h3 id="sheet-title">'+esc(it.title)+'</h3><pre>'+esc(it.prompt)+'</pre><div class="act"><button class="btn" data-copy="'+it.id+'">프롬프트 복사</button>'+(it.user?'<button class="btn del" data-del="'+it.id+'">삭제</button>':'')+'<button class="btn w" data-close>닫기</button></div></div></div>');}
+function openSheet(name,html){last=document.activeElement;sheet.innerHTML='<div class="bar"><span>'+name+'</span><button class="x" data-close aria-label="닫기">×</button></div>'+html;ov.hidden=false;var f=sheet.querySelector('input[type=text],textarea,.vh .btn');(f||sheet.querySelector('.x')).focus();}
+function closeSheet(){ov.hidden=true;sheet.innerHTML='';if(last&&last.focus&&document.contains(last))last.focus();}
+/* 신드롬 = 남캐 기본 세팅, 리아 = 여캐 기본 세팅 */
+var CHAR_MAIN={syndrome:'m',ria:'f'};
+var secPick=0;
+function joinP(a,b){return [a,b].filter(Boolean).map(function(x){return x.trim();}).join(' ');}
+function openItem(id){var it=find(id);if(!it)return;secPick=0;
+  var opts=(it.sections||[]).map(function(s,i){return i?'<label for="opt-'+i+'"><input type="checkbox" id="opt-'+i+'" data-pick="'+i+'">'+esc(s.label)+'</label>':'';}).join('');
+  openSheet(esc(String(it.tag).toLowerCase())+'.png — '+CHARS[it.char],'<div class="view">'+art(it)+'<div class="bd"><span class="tg">'+esc(it.tag)+' · '+CHARS[it.char]+'</span><h3 id="sheet-title">'+esc(it.title)+'</h3>'+
+  '<div class="vh"><b>'+CHARS[it.char]+'</b><div class="btns"><button class="btn w" data-copy="sec:'+esc(it.id)+'">COPY</button><button class="btn" data-copy="fullsec:'+esc(it.id)+'">FULL COPY</button></div></div>'+
+  '<div class="pbox" id="pbox"></div>'+(opts?'<div class="opts">'+opts+'</div>':'')+
+  '<div class="act"><button class="btn w" data-editi="'+esc(it.id)+'">수정</button><button class="btn del" data-del="'+esc(it.id)+'">삭제</button><button class="btn w" data-close>닫기</button></div></div></div>');
+  fillPbox(it);}
+function fillPbox(it){var m=main(CHAR_MAIN[it.char]),s=it.sections[secPick]||it.sections[0];
+  document.getElementById('pbox').innerHTML='<p class="prompt">'+esc(m?m.prompt:'')+'</p><p class="prompt u">'+esc(s.prompt)+'</p>';}
+document.addEventListener('change',function(e){var c=e.target.closest&&e.target.closest('[data-pick]');if(!c)return;
+  var i=+c.dataset.pick;secPick=c.checked?i:0;document.querySelectorAll('[data-pick]').forEach(function(x){if(x!==c)x.checked=false;});
+  var id=sheet.querySelector('[data-editi]');if(id)fillPbox(find(id.dataset.editi));});
 
-function openEdit(mid){var m=mains().filter(function(x){return x.id===mid;})[0];
+function openEdit(mid){var m=main(mid);
   openSheet((mid==='f'?'female':'male')+'.txt — 수정','<form class="form" id="ef" novalidate><h3 id="sheet-title" style="margin:0;font-size:20px">기본 룩북 세팅 · '+m.label+' 수정</h3>'+
   '<label for="e-title">제목<input type="text" id="e-title" maxlength="40" value="'+esc(m.title)+'"></label>'+
-  '<label for="e-prompt">프롬프트<textarea id="e-prompt">'+esc(m.prompt)+'</textarea></label><p class="err" id="e-err" role="alert"></p>'+
-  '<div class="row-end">'+(user.mains[mid]?'<button type="button" class="btn w" id="e-reset">처음 문구로</button>':'')+'<button type="button" class="btn w" data-close>취소</button><button type="submit" class="btn">저장하기</button></div></form>');
-  var f=document.getElementById('ef');
-  f.addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('e-title').value.trim(),p=document.getElementById('e-prompt').value.trim();
-    if(!t||!p){document.getElementById('e-err').textContent='제목과 프롬프트를 모두 적어 주세요.';return;}
-    var prev=user.mains[mid];user.mains[mid]={title:t,prompt:p};if(!Store.save(user)){user.mains[mid]=prev;return;}render();closeSheet();toast(m.label+' 세팅을 저장했어요');});
-  var r=document.getElementById('e-reset');if(r)r.addEventListener('click',function(){delete user.mains[mid];Store.save(user);render();closeSheet();toast('처음 문구로 되돌렸어요');});
+  '<label for="e-prompt">기본 프롬프트<textarea id="e-prompt">'+esc(m.prompt)+'</textarea></label>'+
+  '<label for="e-uni">제복 프롬프트 <span class="hint" style="margin:0">제복 버튼을 누르면 나오는 두 번째 단락이에요.</span><textarea id="e-uni">'+esc(m.uniform)+'</textarea></label><p class="err" id="e-err" role="alert"></p>'+
+  '<div class="row-end"><button type="button" class="btn w" data-close>취소</button><button type="submit" class="btn">저장하기</button></div></form>');
+  document.getElementById('ef').addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('e-title').value.trim(),p=document.getElementById('e-prompt').value.trim();
+    if(!t||!p){document.getElementById('e-err').textContent='제목과 기본 프롬프트를 적어 주세요.';return;}
+    var prev=clone(m);m.title=t;m.prompt=p;m.uniform=document.getElementById('e-uni').value.trim();
+    persist(m.label+' 세팅을 저장했어요').then(function(ok){if(ok)closeSheet();else{Object.assign(m,prev);render();}});});
 }
 
+function rowHtml(s){return '<div class="srow"><div class="top2"><input type="text" class="s-label" maxlength="20" placeholder="섹션 이름 (예: 상반신만)" aria-label="섹션 이름" value="'+esc(s.label)+'"><button type="button" class="rm" data-rmrow aria-label="이 섹션 지우기">×</button></div><textarea class="s-prompt" aria-label="섹션 프롬프트" placeholder="이 섹션에서 복사할 프롬프트">'+esc(s.prompt)+'</textarea></div>';}
 var pending=null;
-function openAdd(ch){pending=null;ch=CHARS[ch]?ch:cur;
-  openSheet('new_file.png','<form class="form" id="af" novalidate><h3 id="sheet-title" style="margin:0;font-size:20px">의상 프롬프트 추가</h3>'+
+function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:(CHARS[ch]?ch:cur);
+  var secs=it?it.sections:[{label:'전체',prompt:''},{label:'상반신만',prompt:''},{label:'신발없이',prompt:''}];
+  var tags=['OUTER','TOP','BOTTOM','DRESS','SET','SHOES','BAG','ETC'];
+  openSheet(it?'edit_file.png':'new_file.png','<form class="form" id="af" novalidate><h3 id="sheet-title" style="margin:0;font-size:20px">'+(it?'의상 수정':'의상 프롬프트 추가')+'</h3>'+
   '<div class="seg" role="radiogroup" aria-label="캐릭터"><label><input type="radio" name="ch" id="a-syndrome" value="syndrome"'+(ch==='syndrome'?' checked':'')+'>신드롬</label><label><input type="radio" name="ch" id="a-ria" value="ria"'+(ch==='ria'?' checked':'')+'>리아</label></div>'+
-  '<div class="two"><label for="a-title">의상 이름<input type="text" id="a-title" maxlength="40" placeholder="예: 체크 플리츠 스커트"></label><label for="a-tag">분류<select id="a-tag"><option>OUTER</option><option>TOP</option><option>BOTTOM</option><option>DRESS</option><option>SHOES</option><option>BAG</option><option>ETC</option></select></label></div>'+
-  '<label for="a-prompt">프롬프트<textarea id="a-prompt" placeholder="복사해서 쓸 프롬프트를 붙여 넣으세요"></textarea></label>'+
-  '<div><label for="a-img">의상 이미지</label><div class="drop" style="margin-top:6px"><div class="pv" id="a-pv">미리보기</div><div><input type="file" id="a-img" accept="image/*"><p class="hint">사진은 자동으로 줄여서 저장해요. 흑백·망점 효과는 화면에서만 입혀져요.</p></div></div></div>'+
-  '<p class="err" id="a-err" role="alert"></p><div class="row-end"><button type="button" class="btn w" data-close>취소</button><button type="submit" class="btn">저장하기</button></div></form>');
+  '<div class="two"><label for="a-title">의상 이름<input type="text" id="a-title" maxlength="40" placeholder="예: 체크 플리츠 스커트" value="'+esc(it?it.title:'')+'"></label><label for="a-tag">분류<select id="a-tag">'+tags.map(function(t){return '<option'+(it&&it.tag===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></label></div>'+
+  '<div><label>프롬프트 섹션 <span class="hint" style="margin:0">비워 둔 섹션은 저장되지 않아요.</span></label><div class="srows" id="srows" style="margin-top:8px">'+secs.map(rowHtml).join('')+'</div><button type="button" class="btn w addsec" id="addsec" style="margin-top:10px">+ 섹션 추가</button></div>'+
+  '<div><label for="a-img">의상 이미지'+(it?' (바꿀 때만 선택)':'')+'</label><div class="drop" style="margin-top:6px"><div class="pv" id="a-pv">'+(it?'<img src="'+esc(it.img||svgUri(it.art||'jacket'))+'" alt="">':'미리보기')+'</div><div><input type="file" id="a-img" accept="image/*"><p class="hint">사진은 자동으로 줄여서 저장해요. 흑백·망점 효과는 화면에서만 입혀져요.</p></div></div></div>'+
+  '<p class="err" id="a-err" role="alert"></p><div class="row-end"><button type="button" class="btn w" data-close>취소</button><button type="submit" class="btn" id="a-save">저장하기</button></div></form>');
   var f=document.getElementById('af');
+  document.getElementById('addsec').addEventListener('click',function(){document.getElementById('srows').insertAdjacentHTML('beforeend',rowHtml({label:'',prompt:''}));var l=document.querySelectorAll('#srows .s-label');l[l.length-1].focus();});
+  f.addEventListener('click',function(e){var b=e.target.closest('[data-rmrow]');if(b)b.closest('.srow').remove();});
   f.addEventListener('change',function(e){if(e.target.id==='a-img'&&e.target.files[0])readImg(e.target.files[0]);});
   f.addEventListener('submit',function(e){e.preventDefault();
-    var c=f.querySelector('input[name=ch]:checked').value,t=document.getElementById('a-title').value.trim(),p=document.getElementById('a-prompt').value.trim(),err=document.getElementById('a-err');
-    if(!t||!p){err.textContent='의상 이름과 프롬프트를 모두 적어 주세요.';return;}
-    if(!pending){err.textContent='의상 이미지를 골라 주세요.';return;}
-    user.items.unshift({id:'u'+Date.now(),char:c,title:t,tag:document.getElementById('a-tag').value,prompt:p,img:pending,user:true});
-    if(!Store.save(user)){user.items.shift();return;}
-    cur=c;render();closeSheet();toast(CHARS[c]+' 의상을 추가했어요');});
+    var c=f.querySelector('input[name=ch]:checked').value,t=document.getElementById('a-title').value.trim(),err=document.getElementById('a-err');
+    var rows=[].slice.call(document.querySelectorAll('#srows .srow')).map(function(r){return {label:r.querySelector('.s-label').value.trim(),prompt:r.querySelector('.s-prompt').value.trim()};}).filter(function(s){return s.prompt;});
+    rows.forEach(function(s,i){if(!s.label)s.label=i?'섹션 '+(i+1):'전체';});
+    if(!t){err.textContent='의상 이름을 적어 주세요.';return;}
+    if(!rows.length){err.textContent='프롬프트를 한 개 이상 적어 주세요.';return;}
+    if(!it&&!pending){err.textContent='의상 이미지를 골라 주세요.';return;}
+    var btn=document.getElementById('a-save');btn.disabled=true;btn.textContent='저장 중…';
+    (pending?Store.putImage(pending):Promise.resolve(null)).then(function(url){
+      var prev=it?clone(it):null;
+      if(it){if(url){Store.dropImage(it.img);it.img=url;}it.char=c;it.title=t;it.tag=document.getElementById('a-tag').value;it.sections=rows;}
+      else state.items.unshift({id:'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),char:c,title:t,tag:document.getElementById('a-tag').value,img:url,sections:rows});
+      return persist(it?'수정했어요':CHARS[c]+' 의상을 추가했어요').then(function(ok){if(ok){cur=c;render();closeSheet();}else{if(it)Object.assign(it,prev);else state.items.shift();render();btn.disabled=false;btn.textContent='저장하기';}});
+    },function(){err.textContent='이미지를 올리지 못했어요. 다시 시도해 주세요.';btn.disabled=false;btn.textContent='저장하기';});
+  });
 }
-function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);pending=c.toDataURL('image/jpeg',.82);document.getElementById('a-pv').innerHTML='<img src="'+pending+'" alt="선택한 이미지">';};im.src=r.result;};r.readAsDataURL(file);}
+function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);pending=c.toDataURL('image/jpeg',.85);document.getElementById('a-pv').innerHTML='<img src="'+pending+'" alt="선택한 이미지">';};im.src=r.result;};r.readAsDataURL(file);}
+
+/* 삭제는 팝업 안에서 한 번 더 확인 */
+function askDelete(id){var it=find(id);var a=sheet.querySelector('.act');a.innerHTML='<span style="font-size:13px;align-self:center;font-family:var(--kr)">‘'+esc(it.title)+'’을(를) 지울까요?</span><button class="btn del" data-delyes="'+esc(id)+'">지우기</button><button class="btn w" data-open="'+esc(id)+'">취소</button>';a.querySelector('.del').focus();}
 
 document.addEventListener('click',function(e){
   if(e.target===ov){closeSheet();return;}
-  var t=e.target.closest('[data-copy],[data-open],[data-add],[data-close],[data-del],[data-edit],[data-char]');if(!t)return;
-  if(t.dataset.char){cur=t.dataset.char;try{history.replaceState(null,'','#'+cur);}catch(x){}render();return;}
-  if(t.hasAttribute('data-copy')){var k=t.dataset.copy;var txt=k.indexOf('main:')===0?mains().filter(function(m){return m.id===k.slice(5);})[0].prompt:find(k).prompt;copy(txt,t);}
-  else if(t.hasAttribute('data-open'))openItem(t.dataset.open);
-  else if(t.hasAttribute('data-edit'))openEdit(t.dataset.edit);
-  else if(t.hasAttribute('data-add'))openAdd(t.dataset.add);
-  else if(t.hasAttribute('data-close'))closeSheet();
-  else if(t.hasAttribute('data-del')){var id=t.dataset.del;user.items=user.items.filter(function(i){return i.id!==id;});Store.save(user);render();closeSheet();toast('삭제했어요');}
+  var t=e.target.closest('[data-copy],[data-open],[data-add],[data-close],[data-del],[data-delyes],[data-edit],[data-editi],[data-char],[data-uni]');if(!t)return;
+  var d=t.dataset;
+  if(d.char){cur=d.char;try{history.replaceState(null,'','#'+cur);}catch(x){}render();return;}
+  if(d.uni){uniOpen[d.uni]=!uniOpen[d.uni];render();var b=document.querySelector('[data-uni="'+d.uni+'"]');if(b)b.focus();return;}
+  if(d.copy){var k=d.copy.split(':'),txt='';
+    if(k[0]==='main')txt=main(k[1]).prompt;else if(k[0]==='uni')txt=main(k[1]).uniform||'';else if(k[0]==='full'){var mm=main(k[1]);txt=joinP(mm.prompt,mm.uniform);}
+    else if(k[0]==='sec'||k[0]==='fullsec'){var it=find(k[1]),sc=(it.sections[secPick]||it.sections[0]).prompt;txt=k[0]==='sec'?sc:joinP((main(CHAR_MAIN[it.char])||{}).prompt,sc);}
+    if(txt)copy(txt,t);else toast('복사할 내용이 없어요');}
+  else if(d.open)openItem(d.open);
+  else if(d.edit)openEdit(d.edit);
+  else if(d.editi)openItemForm(null,d.editi);
+  else if(d.add!==undefined)openItemForm(d.add);
+  else if(d.close!==undefined)closeSheet();
+  else if(d.del)askDelete(d.del);
+  else if(d.delyes){var id=d.delyes,gone=find(id),idx=state.items.indexOf(gone);state.items.splice(idx,1);
+    persist('삭제했어요').then(function(ok){if(ok){Store.dropImage(gone.img);closeSheet();}else{state.items.splice(idx,0,gone);render();}});}
 });
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&!ov.hidden)closeSheet();
@@ -336,19 +394,9 @@ document.addEventListener('keydown',function(e){
 function fromHash(){var h=location.hash.slice(1);if(CHARS[h]){cur=h;render();}}
 window.addEventListener('hashchange',fromHash);
 
-/* ---------- 토큰 입장 (임시: 실제로 막으려면 서버에서 확인해야 함) ---------- */
-var TOKEN_HASH='0389c2be11c6286a06d65a000d817d273590cba6c32496cf9678879725e7d41a'; /* 토큰 원문 대신 SHA-256 값만 저장 */
-function sha256(t){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ('0'+x.toString(16)).slice(-2);}).join('');});}
-var gate=document.getElementById('gate'),gform=document.getElementById('gform');
-function ok(){try{return sessionStorage.getItem('zz-ok')==='1';}catch(e){return false;}}
-function setGate(){gate.hidden=ok();document.getElementById('app').inert=!gate.hidden;if(!gate.hidden)setTimeout(function(){document.getElementById('gtoken').focus();},50);}
-function fail(m){document.getElementById('gerr').textContent=m;gform.classList.remove('shake');void gform.offsetWidth;gform.classList.add('shake');}
-gform.addEventListener('submit',function(e){e.preventDefault();var v=document.getElementById('gtoken').value.trim();
-  if(!v){fail('토큰을 입력해 주세요.');return;}
-  sha256(v).then(function(h){if(h===TOKEN_HASH){try{sessionStorage.setItem('zz-ok','1');}catch(x){}document.getElementById('gerr').textContent='';setGate();}else fail('토큰이 맞지 않아요. 받은 토큰을 다시 확인해 주세요.');},function(){fail('이 브라우저에서는 토큰을 확인할 수 없어요. https 주소로 접속해 주세요.');});});
-document.getElementById('lock').addEventListener('click',function(){try{sessionStorage.removeItem('zz-ok');}catch(e){}document.getElementById('gtoken').value='';setGate();});
+render();fromHash();
+Store.init().then(function(s){if(s){state=s;}else if(Store.server){Store.save(state).catch(function(){});}render();fromHash();});
 
-render();fromHash();setGate();
 })();
 </script>
 <!--BODY-END-->
