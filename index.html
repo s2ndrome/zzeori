@@ -164,17 +164,51 @@ img{display:block;max-width:100%}
 .addsec{align-self:flex-start}
 .lk{display:inline-flex;align-items:center;border:1px solid var(--line);height:22px;padding:0 10px;font-size:12px;text-decoration:none;color:var(--ink)}
 .mode{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;overflow:auto;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.gbox{width:min(460px,100%);display:flex;flex-direction:column;gap:16px}
+.gbox .big{font-size:clamp(72px,18vw,120px)}
+.gbox p{margin:0;font-size:14px;line-height:1.6;color:var(--ink2);font-family:var(--kr)}
+.gbox code{font-family:var(--mono);font-size:12.5px;border:1px solid var(--line);padding:0 4px}
+.gform{position:relative;border:1px solid var(--line);padding:6px;display:flex;gap:6px}
+.gform input{flex:1;min-width:0;border:0;font-family:var(--mono);font-size:15px;padding:10px;background:transparent}
+.gform input:focus{outline:none}
+.gform:focus-within{box-shadow:4px 4px 0 var(--ink)}
+.gform button{border:0;background:var(--ink);color:var(--bg);padding:0 18px;font-size:14px}
+.keep{display:flex;align-items:center;gap:8px;font-size:13px;font-family:var(--kr)}
+.keep input{width:15px;height:15px;accent-color:#111;margin:0}
+.gerr{color:var(--err);font-size:13px;min-height:1.2em;font-family:var(--kr)}
+.demo{align-self:flex-start;border:0;background:none;padding:0;font-size:12px;font-family:var(--mono);color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+.shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+button.lk{background:var(--bg);cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <!--HEAD-END-->
 </head>
 <body>
 <!--BODY-START-->
+<div class="gate" id="gate" hidden>
+  <div class="gbox">
+    <div class="menu" style="padding:0"><ul><li>file</li><li>open</li><li class="on">token</li></ul></div>
+    <h1 class="big">R<span class="o">♡</span>M</h1>
+    <p>GitHub에서 발급받은 토큰(<code>github_pat_</code>로 시작)을 넣어 주세요. 토큰은 이 브라우저에만 저장돼요.</p>
+    <form class="gform" id="gform" autocomplete="off">
+      <i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>
+      <label for="gtoken" class="sr">GitHub 토큰</label>
+      <input id="gtoken" type="password" placeholder="github_pat_…" spellcheck="false">
+      <button type="submit">입장</button>
+    </form>
+    <label class="keep" for="gkeep"><input type="checkbox" id="gkeep" checked>이 기기에서 기억하기</label>
+    <div class="gerr" id="gerr" role="alert"></div>
+    <button type="button" class="demo" id="gdemo">예시 화면 둘러보기</button>
+  </div>
+</div>
+
 <div class="wrap" id="app">
   <div class="menu">
     <ul><li>filter</li><li>effect</li><li>view</li><li class="on">window</li></ul>
-    <div class="bars"><i class="f" style="width:22px"></i><i style="width:clamp(60px,14vw,150px)"></i><button type="button" data-add>+ 추가</button><a class="lk" id="lock" href="/__logout" hidden>나가기</a></div>
+    <div class="bars"><i class="f" style="width:22px"></i><i style="width:clamp(60px,14vw,150px)"></i><button type="button" data-add>+ 추가</button><button type="button" class="lk" id="lock" hidden>나가기</button></div>
   </div>
   <span class="rot">( prompt )</span>
 
@@ -218,13 +252,11 @@ function svgUri(k){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent
 
 var CHARS={syndrome:'신드롬',ria:'리아'};
 function S3(full,upper,noshoes){var s=[{label:'전체',prompt:full}];if(upper)s.push({label:'상반신만',prompt:upper});if(noshoes)s.push({label:'신발없이',prompt:noshoes});return s;}
-/* 처음 상태 (서버에 아무것도 없을 때 이 내용으로 시작) */
+/* 예시 화면용 데이터. 실제 프롬프트는 비공개 저장소 zzeori-data 의 data/state.json 에만 있어요. */
 var BASE={
   mains:[
-    {id:'m',label:'남캐',title:'기본 룩북 세팅',prompt:'handsome male, age up, athletic build, v-shaped face, 2::ash brown hair,wolf cut, curtained bangs, face-framing strands::, 0.7::messy hair::, black eyes, tareme, 0.5::half-lidded eyes::, expressionless,',
-      uniform:'military uniform, black double-breasted officer jacket, gold buttons, epaulettes, white gloves, black peaked cap, black trousers, leather belt,'},
-    {id:'f',label:'여캐',title:'기본 룩북 세팅',prompt:'girl, cute face, large bust, left-side hair intake, sky blue eyes, dark brown hair, long hair,  low side ponytail, white ribbon, straight bangs, voluminous wavy hair, tareme, round eyes, soft smile, -1::parted bangs::,',
-      uniform:'school uniform, navy sailor collar blouse, red ribbon tie, pleated navy skirt, white knee socks, brown loafers,'}
+    {id:'m',label:'남캐',title:'기본 룩북 세팅',prompt:'(예시 화면) 실제 남캐 프롬프트는 토큰으로 들어가면 보여요.',uniform:'(예시 화면) 제복 프롬프트 자리예요.'},
+    {id:'f',label:'여캐',title:'기본 룩북 세팅',prompt:'(예시 화면) 실제 여캐 프롬프트는 토큰으로 들어가면 보여요.',uniform:'(예시 화면) 제복 프롬프트 자리예요.'}
   ],
   items:[
     {id:'s1',char:'syndrome',title:'레더 바이커 재킷',tag:'OUTER',art:'jacket',sections:S3('black leather biker jacket, silver zippers, studded belt, white t-shirt, black slim pants, black combat boots, full body,','black leather biker jacket, silver zippers, white t-shirt, upper body, cowboy shot,','black leather biker jacket, silver zippers, studded belt, white t-shirt, black slim pants, barefoot, no shoes,')},
@@ -239,37 +271,60 @@ var BASE={
 };
 function clone(o){return JSON.parse(JSON.stringify(o));}
 
-/* ---------- 저장소
-   yujin.64bit.kr(Cloudflare Pages)에서는 서버(/api)에 저장해서 모두가 같은 내용을 봐요.
-   서버가 없는 곳(미리보기, 파일로 열기)에서는 이 브라우저에만 저장해요. ---------- */
-var LKEY='zzeori-site-v2';
+/* ---------- 저장소: 비공개 GitHub 저장소 s2ndrome/zzeori-data
+   방문자가 입력한 GitHub 토큰으로 GitHub API를 직접 불러요. 토큰은 그 사람 브라우저에만 남아요.
+   data/state.json 에 프롬프트, images/ 에 의상 이미지를 저장하고, 저장할 때마다 커밋이 남아요. ---------- */
+var GH={owner:'s2ndrome',repo:'zzeori-data',file:'data/state.json',token:'',sha:null};
+var TKEY='rom-gh-token';
+function b64e(str){return btoa(unescape(encodeURIComponent(str)));}
+function b64d(b){return decodeURIComponent(escape(atob(String(b).replace(/\s/g,''))));}
+function gh(path,opt){opt=opt||{};var h={'Authorization':'Bearer '+GH.token,'Accept':opt.accept||'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+  if(opt.body)h['Content-Type']='application/json';
+  return fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'});}
+function ghErr(r){var e=new Error(r.status===401?'auth':r.status===403?'perm':r.status===404?'notfound':(r.status===409||r.status===422)?'conflict':'net');e.status=r.status;return e;}
 var Store={
-  server:false,
-  init:function(){
-    return fetch('/api/state',{credentials:'same-origin',cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(s){Store.server=true;return s&&s.items?s:null;})
-      .catch(function(){Store.server=false;try{var s=JSON.parse(localStorage.getItem(LKEY)||'null');if(s&&s.items)return s;}catch(e){}return Store.migrate();});
+  gh:false,
+  login:function(token){GH.token=token;
+    return gh('/contents/'+GH.file).then(function(r){
+      if(r.ok)return r.json().then(function(j){GH.sha=j.sha;Store.gh=true;return JSON.parse(b64d(j.content));});
+      if(r.status===404)return gh('').then(function(r2){if(!r2.ok)throw ghErr(r2.status===404?{status:401}:r2);GH.sha=null;Store.gh=true;return null;});
+      throw ghErr(r.status===404?{status:401}:r);
+    });
   },
-  migrate:function(){try{var o=JSON.parse(localStorage.getItem('zzeori-site-v1')||'null');if(o&&o.items&&o.items.length){var s=clone(BASE);o.items.forEach(function(i){if(i.user)s.items.unshift({id:i.id,char:i.char,title:i.title,tag:i.tag,img:i.img,sections:[{label:'전체',prompt:i.prompt}]});});return s;}}catch(e){}return null;},
-  save:function(st){
-    if(Store.server)return fetch('/api/state',{method:'PUT',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(st)}).then(function(r){if(!r.ok)throw new Error('save');});
-    try{localStorage.setItem(LKEY,JSON.stringify(st));return Promise.resolve();}catch(e){return Promise.reject(new Error('quota'));}
+  reload:function(){return Store.login(GH.token);},
+  save:function(st,msg){
+    if(!Store.gh)return Promise.resolve();
+    var body={message:'R♡M: '+(msg||'저장'),content:b64e(JSON.stringify(st,null,2)+'\n')};if(GH.sha)body.sha=GH.sha;
+    return gh('/contents/'+GH.file,{method:'PUT',body:body}).then(function(r){if(!r.ok)throw ghErr(r);return r.json();}).then(function(j){GH.sha=j.content.sha;});
   },
   putImage:function(dataUrl){
-    if(!Store.server)return Promise.resolve(dataUrl);
-    return fetch('/api/img',{method:'POST',credentials:'same-origin',headers:{'content-type':'text/plain'},body:dataUrl}).then(function(r){if(!r.ok)throw new Error('img');return r.json();}).then(function(j){return j.url;});
+    if(!Store.gh)return Promise.resolve(dataUrl);
+    var path='images/'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)+'.jpg';
+    return gh('/contents/'+path,{method:'PUT',body:{message:'R♡M: 이미지 추가',content:dataUrl.split(',')[1]}}).then(function(r){if(!r.ok)throw ghErr(r);return 'gh:'+path;});
   },
-  dropImage:function(url){if(Store.server&&url&&url.indexOf('/api/img/')===0)fetch(url,{method:'DELETE',credentials:'same-origin'}).catch(function(){});}
+  dropImage:function(ref){if(!Store.gh||!ref||ref.indexOf('gh:')!==0)return;var path=ref.slice(3);
+    gh('/contents/'+path).then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)gh('/contents/'+path,{method:'DELETE',body:{message:'R♡M: 이미지 삭제',sha:j.sha}});}).catch(function(){});}
 };
+/* 비공개 저장소 이미지는 주소만으로 열리지 않아서 토큰으로 받아와 붙인다 */
+var imgCache={};
+function hydrate(root){(root||document).querySelectorAll('img[data-gh]').forEach(function(im){var p=im.getAttribute('data-gh');
+  if(!imgCache[p])imgCache[p]=gh('/contents/'+p,{accept:'application/vnd.github.raw'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){return URL.createObjectURL(b);}).catch(function(){delete imgCache[p];return '';});
+  imgCache[p].then(function(u){if(u)im.src=u;});im.removeAttribute('data-gh');});}
 var state=clone(BASE);
 var cur='syndrome',uniOpen={};
 
 function find(id){return state.items.filter(function(i){return i.id===id;})[0];}
 function main(id){return state.mains.filter(function(m){return m.id===id;})[0];}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function art(it){return '<div class="art'+(it.img?'':' contain')+'"><img src="'+esc(it.img||svgUri(it.art||'jacket'))+'" alt="'+esc(it.title)+'" loading="lazy"></div>';}
+var BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+function imgTag(it,alt){var g=it.img&&it.img.indexOf('gh:')===0;return '<img src="'+(g?BLANK:esc(it.img||svgUri(it.art||'jacket')))+'"'+(g?' data-gh="'+esc(it.img.slice(3))+'"':'')+' alt="'+esc(alt)+'" loading="lazy">';}
+function art(it){return '<div class="art'+(it.img?'':' contain')+'">'+imgTag(it,it.title)+'</div>';}
 var H4='<i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>';
 
-function persist(msg){return Store.save(state).then(function(){render();if(msg)toast(msg);return true;},function(e){toast(e&&e.message==='quota'?'저장 공간이 부족해요. 더 작은 이미지를 써 주세요.':'저장하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');return false;});}
+function errMsg(e){var m=e&&e.message;return m==='perm'?'이 토큰은 보기 전용이라 저장할 수 없어요.':m==='auth'?'토큰이 만료됐거나 삭제됐어요. 다시 입장해 주세요.':m==='conflict'?'다른 사람이 먼저 저장했어요. 최신 내용을 불러왔으니 다시 해 주세요.':'저장하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';}
+function persist(msg){return Store.save(state,msg).then(function(){render();if(msg)toast(msg);return true;},function(e){toast(errMsg(e));
+  if(e&&e.message==='conflict')Store.reload().then(function(s){if(s)state=s;render();}).catch(function(){});
+  if(e&&e.message==='auth')logout();return false;});}
 
 function render(){
   document.getElementById('mains').innerHTML=state.mains.map(function(m){var open=!!uniOpen[m.id];return ''+
@@ -281,14 +336,15 @@ function render(){
     '<button class="btn w" data-edit="'+m.id+'">수정</button></div></div>';}).join('');
   var n={syndrome:0,ria:0},files=state.mains.length;state.items.forEach(function(i){n[i.char]=(n[i.char]||0)+1;files+=(i.sections||[]).length;});
   document.getElementById('n-syndrome').textContent=n.syndrome;document.getElementById('n-ria').textContent=n.ria;
-  document.getElementById('count').innerHTML='프롬프트<br><b>'+files+'</b> files<br><span class="mode">'+(Store.server?'shared':'this browser only')+'</span>';
+  document.getElementById('count').innerHTML='프롬프트<br><b>'+files+'</b> files<br><span class="mode">'+(Store.gh?'zzeori-data':'example')+'</span>';
   var list=state.items.filter(function(i){return i.char===cur;});
   document.getElementById('grid').innerHTML=list.map(function(it){return '<button class="it" data-open="'+esc(it.id)+'">'+art(it)+H4+'<span class="nm">'+esc(it.title)+'<em>'+(it.sections||[]).length+' sec · '+esc(String(it.tag).toLowerCase())+'</em></span></button>';}).join('')+
     (list.length?'':'<p class="empty">아직 '+CHARS[cur]+' 의상이 없어요. + 칸에서 첫 의상을 추가해 보세요.</p>')+
     '<button class="addt" data-add="'+cur+'"><b>+</b>'+CHARS[cur]+' 의상 추가</button>';
   document.querySelectorAll('.cbtn').forEach(function(b){var on=b.dataset.char===cur;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;});
   document.getElementById('grid').setAttribute('aria-labelledby','c-'+cur);
-  document.getElementById('lock').hidden=!Store.server;
+  document.getElementById('lock').hidden=!Store.gh;
+  hydrate();
 }
 
 /* ---------- 복사 ---------- */
@@ -301,7 +357,7 @@ function copy(text,btn){
 
 /* ---------- 팝업 ---------- */
 var ov=document.getElementById('ov'),sheet=document.getElementById('sheet'),last=null;
-function openSheet(name,html){last=document.activeElement;sheet.innerHTML='<div class="bar"><span>'+name+'</span><button class="x" data-close aria-label="닫기">×</button></div>'+html;ov.hidden=false;var f=sheet.querySelector('input[type=text],textarea,.vh .btn');(f||sheet.querySelector('.x')).focus();}
+function openSheet(name,html){last=document.activeElement;sheet.innerHTML='<div class="bar"><span>'+name+'</span><button class="x" data-close aria-label="닫기">×</button></div>'+html;ov.hidden=false;hydrate(sheet);var f=sheet.querySelector('input[type=text],textarea,.vh .btn');(f||sheet.querySelector('.x')).focus();}
 function closeSheet(){ov.hidden=true;sheet.innerHTML='';if(last&&last.focus&&document.contains(last))last.focus();}
 /* 신드롬 = 남캐 기본 세팅, 리아 = 여캐 기본 세팅 */
 var CHAR_MAIN={syndrome:'m',ria:'f'};
@@ -341,7 +397,7 @@ function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:
   '<div class="seg" role="radiogroup" aria-label="캐릭터"><label><input type="radio" name="ch" id="a-syndrome" value="syndrome"'+(ch==='syndrome'?' checked':'')+'>신드롬</label><label><input type="radio" name="ch" id="a-ria" value="ria"'+(ch==='ria'?' checked':'')+'>리아</label></div>'+
   '<div class="two"><label for="a-title">의상 이름<input type="text" id="a-title" maxlength="40" placeholder="예: 체크 플리츠 스커트" value="'+esc(it?it.title:'')+'"></label><label for="a-tag">분류<select id="a-tag">'+tags.map(function(t){return '<option'+(it&&it.tag===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></label></div>'+
   '<div><label>프롬프트 섹션 <span class="hint" style="margin:0">비워 둔 섹션은 저장되지 않아요.</span></label><div class="srows" id="srows" style="margin-top:8px">'+secs.map(rowHtml).join('')+'</div><button type="button" class="btn w addsec" id="addsec" style="margin-top:10px">+ 섹션 추가</button></div>'+
-  '<div><label for="a-img">의상 이미지'+(it?' (바꿀 때만 선택)':'')+'</label><div class="drop" style="margin-top:6px"><div class="pv" id="a-pv">'+(it?'<img src="'+esc(it.img||svgUri(it.art||'jacket'))+'" alt="">':'미리보기')+'</div><div><input type="file" id="a-img" accept="image/*"><p class="hint">사진은 자동으로 줄여서 저장해요. 흑백·망점 효과는 화면에서만 입혀져요.</p></div></div></div>'+
+  '<div><label for="a-img">의상 이미지'+(it?' (바꿀 때만 선택)':'')+'</label><div class="drop" style="margin-top:6px"><div class="pv" id="a-pv">'+(it?imgTag(it,''):'미리보기')+'</div><div><input type="file" id="a-img" accept="image/*"><p class="hint">사진은 자동으로 줄여서 저장해요. 흑백·망점 효과는 화면에서만 입혀져요.</p></div></div></div>'+
   '<p class="err" id="a-err" role="alert"></p><div class="row-end"><button type="button" class="btn w" data-close>취소</button><button type="submit" class="btn" id="a-save">저장하기</button></div></form>');
   var f=document.getElementById('af');
   document.getElementById('addsec').addEventListener('click',function(){document.getElementById('srows').insertAdjacentHTML('beforeend',rowHtml({label:'',prompt:''}));var l=document.querySelectorAll('#srows .s-label');l[l.length-1].focus();});
@@ -360,7 +416,7 @@ function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:
       if(it){if(url){Store.dropImage(it.img);it.img=url;}it.char=c;it.title=t;it.tag=document.getElementById('a-tag').value;it.sections=rows;}
       else state.items.unshift({id:'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),char:c,title:t,tag:document.getElementById('a-tag').value,img:url,sections:rows});
       return persist(it?'수정했어요':CHARS[c]+' 의상을 추가했어요').then(function(ok){if(ok){cur=c;render();closeSheet();}else{if(it)Object.assign(it,prev);else state.items.shift();render();btn.disabled=false;btn.textContent='저장하기';}});
-    },function(){err.textContent='이미지를 올리지 못했어요. 다시 시도해 주세요.';btn.disabled=false;btn.textContent='저장하기';});
+    },function(e2){err.textContent=e2&&e2.message==='perm'?'이 토큰은 보기 전용이라 저장할 수 없어요.':'이미지를 올리지 못했어요. 다시 시도해 주세요.';btn.disabled=false;btn.textContent='저장하기';});
   });
 }
 function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);pending=c.toDataURL('image/jpeg',.85);document.getElementById('a-pv').innerHTML='<img src="'+pending+'" alt="선택한 이미지">';};im.src=r.result;};r.readAsDataURL(file);}
@@ -394,8 +450,27 @@ document.addEventListener('keydown',function(e){
 function fromHash(){var h=location.hash.slice(1);if(CHARS[h]){cur=h;render();}}
 window.addEventListener('hashchange',fromHash);
 
-render();fromHash();
-Store.init().then(function(s){if(s){state=s;}else if(Store.server){Store.save(state).catch(function(){});}render();fromHash();});
+/* ---------- 입장: GitHub 토큰 ---------- */
+var gate=document.getElementById('gate'),gform=document.getElementById('gform'),app=document.getElementById('app');
+function getTok(){try{return localStorage.getItem(TKEY)||sessionStorage.getItem(TKEY)||'';}catch(e){return '';}}
+function setTok(t,keep){try{localStorage.removeItem(TKEY);sessionStorage.removeItem(TKEY);if(t)(keep?localStorage:sessionStorage).setItem(TKEY,t);}catch(e){}}
+function showGate(msg){gate.hidden=false;app.inert=true;document.getElementById('gerr').textContent=msg||'';setTimeout(function(){document.getElementById('gtoken').focus();},50);}
+function enter(s){state=s||clone(BASE);gate.hidden=true;app.inert=false;render();fromHash();}
+function logout(){setTok('');Store.gh=false;GH.token='';GH.sha=null;imgCache={};state=clone(BASE);document.getElementById('gtoken').value='';showGate('');}
+function tryLogin(t,keep){var btn=gform.querySelector('button');btn.disabled=true;btn.textContent='확인 중…';
+  return Store.login(t).then(function(s){setTok(t,keep);btn.disabled=false;btn.textContent='입장';enter(s);},
+    function(e){btn.disabled=false;btn.textContent='입장';setTok('');
+      showGate(e&&e.message==='auth'?'토큰이 맞지 않거나 zzeori-data 저장소 권한이 없어요.':'GitHub에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.');
+      gform.classList.remove('shake');void gform.offsetWidth;gform.classList.add('shake');});}
+gform.addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('gtoken').value.trim();
+  if(!t){showGate('토큰을 입력해 주세요.');return;}tryLogin(t,document.getElementById('gkeep').checked);});
+document.getElementById('lock').addEventListener('click',function(e){e.preventDefault();logout();});
+var demo=document.getElementById('gdemo');
+if(/(^|\.)64bit\.kr$|github\.io$/.test(location.hostname))demo.hidden=true;
+demo.addEventListener('click',function(){enter(null);toast('예시 화면이에요. 저장해도 이 브라우저 밖으로 나가지 않아요.');});
+
+render();
+var saved=getTok();if(saved){GH.token=saved;tryLogin(saved,!!(function(){try{return localStorage.getItem(TKEY);}catch(e){return null;}})());}else showGate('');
 
 })();
 </script>
