@@ -305,7 +305,8 @@ var Store={
   },
   putImage:function(dataUrl){
     if(!Store.gh)return Promise.resolve(dataUrl);
-    var path='images/'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)+'.jpg';
+    var ext=/^data:image\/png/.test(dataUrl)?'.png':'.jpg';
+    var path='images/'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)+ext;
     return gh('/contents/'+path,{method:'PUT',body:{message:'R♡M: 이미지 추가',content:dataUrl.split(',')[1]}}).then(function(r){if(!r.ok)throw ghErr(r);return 'gh:'+path;});
   },
   dropImage:function(ref){if(!Store.gh||!ref||ref.indexOf('gh:')!==0)return;var path=ref.slice(3);
@@ -433,7 +434,10 @@ function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:
 document.addEventListener('paste',function(e){if(ov.hidden||!document.getElementById('af'))return;
   var items=[].slice.call((e.clipboardData&&e.clipboardData.items)||[]),it=items.filter(function(x){return x.kind==='file'&&/^image\//.test(x.type);})[0];
   if(!it)return;e.preventDefault();var fl=it.getAsFile();if(fl){readImg(fl);toast('붙여 넣은 사진을 넣었어요');}});
-function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);pending=c.toDataURL('image/jpeg',.85);document.getElementById('a-pv').innerHTML='<img src="'+pending+'" alt="선택한 이미지">';};im.src=r.result;};r.readAsDataURL(file);}
+function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);var g=c.getContext('2d');g.drawImage(im,0,0,c.width,c.height);
+  /* 투명한 픽셀이 있으면 PNG로 저장(JPG는 투명이 검게 변함), 없으면 용량이 작은 JPG */
+  var px=g.getImageData(0,0,c.width,c.height).data,alpha=false;for(var i=3;i<px.length;i+=16){if(px[i]<255){alpha=true;break;}}
+  pending=alpha?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.85);document.getElementById('a-pv').innerHTML='<img src="'+pending+'" alt="선택한 이미지">';};im.src=r.result;};r.readAsDataURL(file);}
 
 /* 삭제는 팝업 안에서 한 번 더 확인 */
 function askDelete(id){var it=find(id);var a=sheet.querySelector('.act');a.innerHTML='<span style="font-size:13px;align-self:center;font-family:var(--kr)">‘'+esc(it.title)+'’을(를) 지울까요?</span><button class="btn del" data-delyes="'+esc(id)+'">지우기</button><button class="btn w" data-open="'+esc(id)+'">취소</button>';a.querySelector('.del').focus();}
