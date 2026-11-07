@@ -352,7 +352,7 @@ function persist(msg){return Store.save(state,msg).then(function(){render();if(m
 
 function render(){
   document.getElementById('mains').innerHTML=state.mains.map(function(m){var open=!!uniOpen[m.id];return ''+
-    '<div class="doc"><div class="tab"><b>'+esc(m.title)+' · '+m.label+'</b><span>'+(m.id==='f'?'female':'male')+'.txt</span></div>'+
+    '<div class="doc"><div class="tab"><b>'+esc(m.title)+'</b></div>'+
     '<div class="sel" id="box-'+m.id+'">'+H4+'<i class="h tm"></i><i class="h bm"></i><p class="prompt">'+esc(m.prompt)+'</p>'+
     (open?'<p class="prompt u">'+esc(m.uniform||'(아직 제복 프롬프트가 없어요. 수정에서 넣어 주세요.)')+'</p>':'')+'</div>'+
     '<div class="tb"><span class="box">Mono</span><span class="box">14</span><b>B</b><i>i</i><span>A</span><button class="btn tg2" data-uni="'+m.id+'" aria-pressed="'+open+'" aria-controls="box-'+m.id+'">제복</button>'+
