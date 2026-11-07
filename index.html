@@ -40,6 +40,13 @@ img{display:block;max-width:100%}
 .menu{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;font-size:14px;padding-block:20px 0}
 .menu ul{display:flex;gap:24px;list-style:none;margin:0;padding:0}
 .menu li.on{background:var(--ink);color:var(--bg);padding:0 4px}
+.mb{border:0;background:none;padding:0 4px;font:inherit;line-height:inherit}
+.mb:hover{text-decoration:underline;text-underline-offset:3px}
+.mb[aria-pressed="true"]{background:var(--ink);color:var(--bg);text-decoration:none}
+/* view = 완성 화면: 수정·추가·삭제 버튼을 모두 숨긴다 */
+.mode-view [data-edit],.mode-view [data-editi],.mode-view [data-add],.mode-view [data-del],.mode-view .ed{display:none!important}
+.mode-view .pick[data-portrait]{pointer-events:none}
+.mode-view .pick[data-portrait] .empty2{visibility:hidden}
 .bars{display:flex;gap:8px;align-items:center}
 .bars i{display:block;height:18px;border:1px solid var(--line)}
 .bars i.f{background:var(--ink)}
@@ -223,7 +230,7 @@ button.lk{background:var(--bg);cursor:pointer}
 
 <div class="wrap" id="app">
   <div class="menu">
-    <ul><li>filter</li><li>effect</li><li>view</li><li class="on">window</li></ul>
+    <ul><li>filter</li><li>effect</li><li><button type="button" class="mb" data-mode="view" aria-pressed="false" title="완성 화면 보기">view</button></li><li><button type="button" class="mb" data-mode="window" aria-pressed="true" title="수정 화면">window</button></li></ul>
     <div class="bars"><i class="f" style="width:22px"></i><i style="width:clamp(60px,14vw,150px)"></i><button type="button" data-add>+ 추가</button><button type="button" class="lk" id="lock" hidden>나가기</button></div>
   </div>
   <span class="rot">( prompt )</span>
@@ -515,6 +522,13 @@ document.getElementById('lock').addEventListener('click',function(e){e.preventDe
 var demo=document.getElementById('gdemo');
 if(/(^|\.)64bit\.kr$|github\.io$/.test(location.hostname))demo.hidden=true;
 demo.addEventListener('click',function(){enter(null);toast('예시 화면이에요. 저장해도 이 브라우저 밖으로 나가지 않아요.');});
+
+/* view / window 전환 (이 기기에서 기억) */
+function setMode(m){document.body.classList.toggle('mode-view',m==='view');
+  document.querySelectorAll('[data-mode]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.mode===m);});
+  try{localStorage.setItem('rom-mode',m);}catch(e){}}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-mode]');if(b){setMode(b.dataset.mode);if(!ov.hidden&&b.dataset.mode==='view'&&document.querySelector('#af,#pf,#ef'))closeSheet();}});
+setMode((function(){try{return localStorage.getItem('rom-mode');}catch(e){return null;}})()==='window'?'window':'view');
 
 render();
 var saved=getTok();if(saved){GH.token=saved;tryLogin(saved,!!(function(){try{return localStorage.getItem(TKEY);}catch(e){return null;}})());}else showGate('');
