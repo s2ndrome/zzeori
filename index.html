@@ -66,12 +66,22 @@ img{display:block;max-width:100%}
 .big .o{position:relative;display:inline-block}
 .big .o::after{content:"";position:absolute;inset:6% -2% 4%;pointer-events:none;background:
   linear-gradient(var(--ink),var(--ink)) 0 0/8px 8px no-repeat,linear-gradient(var(--ink),var(--ink)) 100% 0/8px 8px no-repeat,linear-gradient(var(--ink),var(--ink)) 0 100%/8px 8px no-repeat,linear-gradient(var(--ink),var(--ink)) 100% 100%/8px 8px no-repeat}
-.swatch{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap}
-.grad{width:130px;border:1px solid var(--line);padding:8px}
-.grad div{aspect-ratio:1;background:linear-gradient(135deg,#fff,#111)}
-.grad span{display:block;margin-top:6px;border:1px solid var(--line);font-family:var(--mono);font-size:10px;padding:1px 4px;width:70%}
-.count{font-size:14px;line-height:1.35}
-.count b{font-family:var(--mono);font-weight:500}
+/* 캐릭터 대표 이미지 */
+.portraits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;width:100%;max-width:440px}
+.pt{position:relative;min-width:0}
+.pt .pick{display:block;width:100%;border:0;background:none;padding:0;text-align:left;position:relative}
+.pt .frame{aspect-ratio:3/4;border:1px solid var(--line);background:var(--bg);display:grid;place-items:center;overflow:hidden}
+.pt .frame img{width:100%;height:100%;object-fit:contain}
+.pt .frame .empty2{font-family:var(--kr);font-size:12px;color:var(--mute);text-align:center;line-height:1.6}
+.pt .frame .empty2 b{display:block;font-size:30px;font-weight:300;color:var(--ink);line-height:1}
+.pt .h{display:none}
+.pt .pick:hover .h,.pt .pick:focus-visible .h,.pt.on .h{display:block}
+.pt .pick:focus-visible{outline:none}
+.pt .cap{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-top:8px}
+.pt .cap b{font-size:15px;font-weight:600;font-family:var(--kr)}
+.pt .cap span{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.pt .ed{position:absolute;top:6px;right:6px;z-index:2;border:1px solid var(--line);background:var(--bg);font-size:11px;padding:3px 7px;font-family:var(--kr)}
+.pt .ed:hover,.pt .ed:focus-visible{background:var(--ink);color:var(--bg)}
 
 /* 섹션 버튼: 신드롬 / 리아 */
 .chars{margin-top:64px;display:flex;align-items:center;gap:clamp(12px,3vw,28px);flex-wrap:wrap}
@@ -222,7 +232,7 @@ button.lk{background:var(--bg);cursor:pointer}
     <div class="mains" id="mains"></div>
     <div class="side">
       <h1 class="big">R<span class="o">♡</span>M</h1>
-      <div class="swatch"><div class="grad"><div></div><span>#111111</span></div><div class="count" id="count"></div></div>
+      <div class="portraits" id="portraits"></div>
     </div>
   </div>
 
@@ -341,9 +351,13 @@ function render(){
     '<div class="tb"><span class="box">Mono</span><span class="box">14</span><b>B</b><i>i</i><span>A</span><button class="btn tg2" data-uni="'+m.id+'" aria-pressed="'+open+'" aria-controls="box-'+m.id+'">제복</button>'+
     (open?'<button class="btn w" data-copy="uni:'+m.id+'">COPY</button><button class="btn" data-copy="full:'+m.id+'">FULL COPY</button>':'<button class="btn" data-copy="main:'+m.id+'">'+m.label+' 복사하기</button>')+
     '<button class="btn w" data-edit="'+m.id+'">수정</button></div></div>';}).join('');
-  var n={syndrome:0,ria:0},files=state.mains.length;state.items.forEach(function(i){n[i.char]=(n[i.char]||0)+1;files+=(i.sections||[]).length;});
+  var n={syndrome:0,ria:0};state.items.forEach(function(i){n[i.char]=(n[i.char]||0)+1;});
   document.getElementById('n-syndrome').textContent=n.syndrome;document.getElementById('n-ria').textContent=n.ria;
-  document.getElementById('count').innerHTML='프롬프트<br><b>'+files+'</b> files<br><span class="mode">'+(Store.gh?'zzeori-data':'example')+'</span>';
+  var pts=state.portraits||{};
+  document.getElementById('portraits').innerHTML=['syndrome','ria'].map(function(c){var src=pts[c];return '<div class="pt'+(c===cur?' on':'')+'">'+
+    '<button class="pick" data-'+(src?'char':'portrait')+'="'+c+'" aria-label="'+CHARS[c]+(src?' 의상 보기':' 대표 이미지 넣기')+'"><div class="frame">'+(src?imgTag({img:src},CHARS[c]):'<span class="empty2"><b>+</b>대표 이미지<br>넣기</span>')+'</div>'+H4+'</button>'+
+    (src?'<button class="ed" data-portrait="'+c+'" aria-label="'+CHARS[c]+' 대표 이미지 바꾸기">변경</button>':'')+
+    '<div class="cap"><b>'+CHARS[c]+'</b><span>'+c+'.png</span></div></div>';}).join('');
   var list=state.items.filter(function(i){return i.char===cur;});
   document.getElementById('grid').innerHTML=list.map(function(it){return '<div class="card"><button class="it" data-open="'+esc(it.id)+'">'+art(it)+H4+'<span class="nm">'+esc(it.title)+'<em>'+(it.sections||[]).length+' sec · '+esc(String(it.tag).toLowerCase())+'</em></span></button><button class="ed" data-editi="'+esc(it.id)+'" aria-label="'+esc(it.title)+' 수정">수정</button></div>';}).join('')+
     (list.length?'':'<p class="empty">아직 '+CHARS[cur]+' 의상이 없어요. + 칸에서 첫 의상을 추가해 보세요.</p>')+
@@ -397,6 +411,24 @@ function openEdit(mid){var m=main(mid);
 
 function rowHtml(s){return '<div class="srow"><div class="top2"><input type="text" class="s-label" maxlength="20" placeholder="섹션 이름 (예: 상반신만)" aria-label="섹션 이름" value="'+esc(s.label)+'"><button type="button" class="rm" data-rmrow aria-label="이 섹션 지우기">×</button></div><textarea class="s-prompt" aria-label="섹션 프롬프트" placeholder="이 섹션에서 복사할 프롬프트">'+esc(s.prompt)+'</textarea></div>';}
 var pending=null;
+function openPortrait(c){pending=null;var cur2=(state.portraits||{})[c];
+  openSheet(c+'.png — 대표 이미지','<form class="form" id="pf" novalidate><h3 id="sheet-title" style="margin:0;font-size:20px">'+CHARS[c]+' 대표 이미지</h3>'+
+  '<div class="drop"><div class="pv" id="a-pv">'+(cur2?imgTag({img:cur2},''):'미리보기')+'</div><div><input type="file" id="a-img" accept="image/*" aria-label="대표 이미지 파일"><p class="hint"><b>사진을 복사해서 Ctrl+V</b>로 붙여 넣거나, 이 칸에 끌어다 놓아도 돼요. 투명 배경도 그대로 저장돼요.</p></div></div>'+
+  '<p class="err" id="a-err" role="alert"></p><div class="row-end">'+(cur2?'<button type="button" class="btn del" id="p-del">이미지 빼기</button>':'')+'<button type="button" class="btn w" data-close>취소</button><button type="submit" class="btn" id="a-save">저장하기</button></div></form>');
+  var f=document.getElementById('pf');bindDrop(f);
+  var del=document.getElementById('p-del');if(del)del.addEventListener('click',function(){var old=state.portraits[c];delete state.portraits[c];
+    persist(CHARS[c]+' 대표 이미지를 뺐어요').then(function(ok){if(ok){Store.dropImage(old);closeSheet();}else state.portraits[c]=old;});});
+  f.addEventListener('submit',function(e){e.preventDefault();var err=document.getElementById('a-err');if(!pending){err.textContent='이미지를 골라 주세요.';return;}
+    var btn=document.getElementById('a-save');btn.disabled=true;btn.textContent='저장 중…';
+    Store.putImage(pending).then(function(url){state.portraits=state.portraits||{};var old=state.portraits[c];state.portraits[c]=url;
+      return persist(CHARS[c]+' 대표 이미지를 저장했어요').then(function(ok){if(ok){Store.dropImage(old);closeSheet();}else{state.portraits[c]=old;render();btn.disabled=false;btn.textContent='저장하기';}});
+    },function(e2){err.textContent=e2&&e2.message==='perm'?'이 토큰은 보기 전용이라 저장할 수 없어요.':'이미지를 올리지 못했어요. 다시 시도해 주세요.';btn.disabled=false;btn.textContent='저장하기';});});
+}
+function bindDrop(f){f.addEventListener('change',function(e){if(e.target.id==='a-img'&&e.target.files[0])readImg(e.target.files[0]);});
+  var drop=f.querySelector('.drop');
+  drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('over');});
+  drop.addEventListener('dragleave',function(){drop.classList.remove('over');});
+  drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('over');var fl=[].slice.call(e.dataTransfer.files||[]).filter(function(x){return /^image\//.test(x.type);})[0];if(fl)readImg(fl);});}
 function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:(CHARS[ch]?ch:cur);
   var secs=it?it.sections:[{label:'전체',prompt:''},{label:'상반신만',prompt:''},{label:'신발없이',prompt:''}];
   var tags=['OUTER','TOP','BOTTOM','DRESS','SET','SHOES','BAG','ETC'];
@@ -409,11 +441,7 @@ function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:
   var f=document.getElementById('af');
   document.getElementById('addsec').addEventListener('click',function(){document.getElementById('srows').insertAdjacentHTML('beforeend',rowHtml({label:'',prompt:''}));var l=document.querySelectorAll('#srows .s-label');l[l.length-1].focus();});
   f.addEventListener('click',function(e){var b=e.target.closest('[data-rmrow]');if(b)b.closest('.srow').remove();});
-  f.addEventListener('change',function(e){if(e.target.id==='a-img'&&e.target.files[0])readImg(e.target.files[0]);});
-  var drop=f.querySelector('.drop');
-  drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('over');});
-  drop.addEventListener('dragleave',function(){drop.classList.remove('over');});
-  drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('over');var fl=[].slice.call(e.dataTransfer.files||[]).filter(function(x){return /^image\//.test(x.type);})[0];if(fl)readImg(fl);});
+  bindDrop(f);
   f.addEventListener('submit',function(e){e.preventDefault();
     var c=f.querySelector('input[name=ch]:checked').value,t=document.getElementById('a-title').value.trim(),err=document.getElementById('a-err');
     var rows=[].slice.call(document.querySelectorAll('#srows .srow')).map(function(r){return {label:r.querySelector('.s-label').value.trim(),prompt:r.querySelector('.s-prompt').value.trim()};}).filter(function(s){return s.prompt;});
@@ -431,7 +459,7 @@ function openItemForm(ch,id){pending=null;var it=id?find(id):null;ch=it?it.char:
   });
 }
 /* 폼이 열려 있을 때 클립보드 사진 붙여넣기 */
-document.addEventListener('paste',function(e){if(ov.hidden||!document.getElementById('af'))return;
+document.addEventListener('paste',function(e){if(ov.hidden||!document.getElementById('a-pv'))return;
   var items=[].slice.call((e.clipboardData&&e.clipboardData.items)||[]),it=items.filter(function(x){return x.kind==='file'&&/^image\//.test(x.type);})[0];
   if(!it)return;e.preventDefault();var fl=it.getAsFile();if(fl){readImg(fl);toast('붙여 넣은 사진을 넣었어요');}});
 function readImg(file){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);var g=c.getContext('2d');g.drawImage(im,0,0,c.width,c.height);
@@ -444,8 +472,9 @@ function askDelete(id){var it=find(id);var a=sheet.querySelector('.act');a.inner
 
 document.addEventListener('click',function(e){
   if(e.target===ov){closeSheet();return;}
-  var t=e.target.closest('[data-copy],[data-open],[data-add],[data-close],[data-del],[data-delyes],[data-edit],[data-editi],[data-char],[data-uni]');if(!t)return;
+  var t=e.target.closest('[data-copy],[data-open],[data-add],[data-close],[data-del],[data-delyes],[data-edit],[data-editi],[data-char],[data-uni],[data-portrait]');if(!t)return;
   var d=t.dataset;
+  if(d.portrait){openPortrait(d.portrait);return;}
   if(d.char){cur=d.char;try{history.replaceState(null,'','#'+cur);}catch(x){}render();return;}
   if(d.uni){uniOpen[d.uni]=!uniOpen[d.uni];render();var b=document.querySelector('[data-uni="'+d.uni+'"]');if(b)b.focus();return;}
   if(d.copy){var k=d.copy.split(':'),txt='';
