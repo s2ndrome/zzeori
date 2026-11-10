@@ -81,7 +81,7 @@ img{display:block;max-width:100%}
 .portraits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;width:100%;max-width:440px}
 .pt{position:relative;min-width:0}
 .pt .pick{display:block;width:100%;border:0;background:none;padding:0;text-align:left;position:relative}
-.pt .frame{aspect-ratio:3/4;border:1px solid var(--line);background:var(--bg);display:grid;place-items:center;overflow:hidden}
+.pt .frame{aspect-ratio:2/3;border:1px solid var(--line);background:var(--bg);display:grid;place-items:center;overflow:hidden}
 .pt .frame img{width:100%;height:100%;object-fit:contain}
 .pt .frame .empty2{font-family:var(--kr);font-size:12px;color:var(--mute);text-align:center;line-height:1.6}
 .pt .frame .empty2 b{display:block;font-size:30px;font-weight:300;color:var(--ink);line-height:1}
@@ -125,7 +125,7 @@ img{display:block;max-width:100%}
 .it .h{display:none}
 .it:hover .h,.it:focus-visible .h{display:block}
 .it:focus-visible{outline:none}
-.art{aspect-ratio:1;border:1px solid var(--line);background:var(--bg);position:relative;overflow:hidden}
+.art{aspect-ratio:2/3;border:1px solid var(--line);background:var(--bg);position:relative;overflow:hidden}
 .art img{width:100%;height:100%;object-fit:contain}
 img.ld{opacity:0}
 img{transition:opacity .2s}
@@ -134,7 +134,7 @@ img{transition:opacity .2s}
 .art.contain img{padding:10%}
 .it .nm{display:flex;flex-direction:column;gap:2px;font-size:13px;margin-top:8px;line-height:1.35;word-break:keep-all}
 .it .nm em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--mute);white-space:nowrap}
-.addt{border:1px dashed var(--line);background:var(--bg);aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px}
+.addt{border:1px dashed var(--line);background:var(--bg);aspect-ratio:2/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px}
 .addt b{font-size:42px;font-weight:300;line-height:1}
 .empty{grid-column:1/-1;border:1px dashed var(--line);padding:40px 20px;text-align:center;font-size:14px;color:var(--ink2)}
 
@@ -154,7 +154,7 @@ img{transition:opacity .2s}
 .sheet .bar span{font-family:var(--mono);font-size:12px}
 .sheet .x{width:30px;height:30px;border:1px solid var(--line);background:var(--bg);font-size:16px;line-height:1}
 .view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
-.view .art{aspect-ratio:3/4;border:0;border-right:1px solid var(--line)}
+.view .art{aspect-ratio:2/3;border:0;border-right:1px solid var(--line)}
 .view .bd{padding:24px 22px 22px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .view .tg{font-family:var(--mono);font-size:11px;border:1px solid var(--line);align-self:flex-start;padding:2px 8px}
 .view h3{margin:0;font-size:26px;font-weight:500;font-stretch:88%;letter-spacing:-.01em}
@@ -171,13 +171,13 @@ img{transition:opacity .2s}
 .seg label:has(input:checked){background:var(--ink);color:var(--bg)}
 .seg input{position:absolute;opacity:0;pointer-events:none}
 .drop{border:1px dashed var(--line);padding:14px;display:flex;gap:14px;align-items:center}
-.drop .pv{width:72px;height:96px;flex:none;background:var(--soft);display:grid;place-items:center;font-size:11px;color:var(--mute);overflow:hidden}
+.drop .pv{width:72px;height:108px;flex:none;background:var(--soft);display:grid;place-items:center;font-size:11px;color:var(--mute);overflow:hidden}
 .drop .pv img{width:100%;height:100%;object-fit:contain}
 .drop.over{background:var(--soft);border-style:solid}
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
 .err{color:var(--err);font-size:13px;min-height:1em;margin:0}
 .row-end{display:flex;gap:8px;justify-content:flex-end}
-@media (max-width:640px){.view{grid-template-columns:1fr}.view .art{aspect-ratio:4/3;border-right:0;border-bottom:1px solid var(--line)}.form .two{grid-template-columns:1fr}}
+@media (max-width:640px){.view{grid-template-columns:1fr}.view .art{aspect-ratio:auto;height:min(65vh,150vw);border-right:0;border-bottom:1px solid var(--line)}.form .two{grid-template-columns:1fr}}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;font-size:14px;z-index:60;font-family:var(--kr)}
 .pop{animation:pop .3s}@keyframes pop{50%{transform:scale(1.06)}}
 
