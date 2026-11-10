@@ -220,6 +220,10 @@ img{transition:opacity .2s}
 .keep input{width:15px;height:15px;accent-color:#111;margin:0}
 .gerr{color:var(--err);font-size:13px;min-height:1.2em;font-family:var(--kr)}
 .demo{align-self:flex-start;border:0;background:none;padding:0;font-size:12px;font-family:var(--mono);color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+.boot{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.boot .big{font-size:clamp(64px,14vw,110px)}
+.boot .bt{font-family:var(--mono);font-size:12px;color:var(--mute);animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.3}}
 .shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 button.lk{background:var(--bg);cursor:pointer}
@@ -245,6 +249,8 @@ button.lk{background:var(--bg);cursor:pointer}
     <button type="button" class="demo" id="gdemo">예시 화면 둘러보기</button>
   </div>
 </div>
+
+<div class="boot" id="boot" hidden><span class="big">R<span class="o">♡</span>M</span><span class="bt">불러오는 중…</span></div>
 
 <div class="wrap" id="app">
   <div class="menu">
@@ -382,7 +388,14 @@ function art(it){return '<div class="art'+(it.img?'':' contain')+(isGh(it)?' loa
 var H4='<i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>';
 
 function errMsg(e){var m=e&&e.message;return m==='perm'?'이 토큰은 보기 전용이라 저장할 수 없어요.':m==='auth'?'토큰이 만료됐거나 삭제됐어요. 다시 입장해 주세요.':m==='conflict'?'다른 사람이 먼저 저장했어요. 최신 내용을 불러왔으니 다시 해 주세요.':'저장하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';}
-function persist(msg){return Store.save(state,msg).then(function(){render();if(msg)toast(msg);return true;},function(e){toast(errMsg(e));
+/* 마지막으로 불러온 내용을 이 기기에 기억 → 다음 방문 때 바로 보여주고, 뒤에서 GitHub 최신 내용으로 바꾼다 */
+var SKEY='rom-state';
+function cacheState(){try{localStorage.setItem(SKEY,JSON.stringify(state));}catch(e){}}
+function cachedState(){try{var s=JSON.parse(localStorage.getItem(SKEY)||'null');return s&&s.items?s:null;}catch(e){return null;}}
+var syncing=false;
+function persist(msg){
+  if(syncing){toast('최신 내용을 불러오는 중이에요. 잠시 후 다시 해 주세요.');return Promise.resolve(false);}
+  return Store.save(state,msg).then(function(){render();if(Store.gh)cacheState();if(msg)toast(msg);return true;},function(e){toast(errMsg(e));
   if(e&&e.message==='conflict')Store.reload().then(function(s){if(s)state=s;render();}).catch(function(){});
   if(e&&e.message==='auth')logout();return false;});}
 
@@ -567,11 +580,16 @@ var gate=document.getElementById('gate'),gform=document.getElementById('gform'),
 function getTok(){try{return localStorage.getItem(TKEY)||sessionStorage.getItem(TKEY)||'';}catch(e){return '';}}
 function setTok(t,keep){try{localStorage.removeItem(TKEY);sessionStorage.removeItem(TKEY);if(t)(keep?localStorage:sessionStorage).setItem(TKEY,t);}catch(e){}}
 function showGate(msg){gate.hidden=false;app.inert=true;document.getElementById('gerr').textContent=msg||'';setTimeout(function(){document.getElementById('gtoken').focus();},50);}
-function enter(s){state=s||clone(BASE);gate.hidden=true;app.inert=false;render();fromHash();if(Store.gh)prefetchAll();}
-function logout(){setTok('');Store.gh=false;GH.token='';GH.sha=null;clearImgCache();state=clone(BASE);document.getElementById('gtoken').value='';showGate('');}
+var boot=document.getElementById('boot');
+function emptyState(){return {v:2,mains:clone(BASE.mains),items:[],portraits:{}};}
+function enter(s){state=s;boot.hidden=true;gate.hidden=true;app.inert=false;render();fromHash();if(Store.gh){cacheState();prefetchAll();}}
+function logout(){setTok('');Store.gh=false;GH.token='';GH.sha=null;clearImgCache();try{localStorage.removeItem(SKEY);}catch(e){}state=clone(BASE);document.getElementById('gtoken').value='';boot.hidden=true;showGate('');}
 function tryLogin(t,keep){var btn=gform.querySelector('button');btn.disabled=true;btn.textContent='확인 중…';
-  return Store.login(t).then(function(s){setTok(t,keep);btn.disabled=false;btn.textContent='입장';enter(s);},
-    function(e){btn.disabled=false;btn.textContent='입장';setTok('');
+  syncing=true;
+  return Store.login(t).then(function(s){syncing=false;setTok(t,keep);btn.disabled=false;btn.textContent='입장';enter(s||emptyState());},
+    function(e){syncing=false;btn.disabled=false;btn.textContent='입장';boot.hidden=true;
+      if(e&&e.message==='auth'){setTok('');try{localStorage.removeItem(SKEY);}catch(x){}}
+      else if(cachedState()&&getTok()){Store.gh=false;toast('GitHub에 연결하지 못해서 마지막으로 본 내용을 보여주고 있어요. 수정하려면 새로고침해 주세요.');return;}
       showGate(e&&e.message==='auth'?'토큰이 맞지 않거나 zzeori-data 저장소 권한이 없어요.':'GitHub에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.');
       gform.classList.remove('shake');void gform.offsetWidth;gform.classList.add('shake');});}
 gform.addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('gtoken').value.trim();
@@ -579,7 +597,7 @@ gform.addEventListener('submit',function(e){e.preventDefault();var t=document.ge
 document.getElementById('lock').addEventListener('click',function(e){e.preventDefault();logout();});
 var demo=document.getElementById('gdemo');
 if(/(^|\.)64bit\.kr$|github\.io$/.test(location.hostname))demo.hidden=true;
-demo.addEventListener('click',function(){enter(null);toast('예시 화면이에요. 저장해도 이 브라우저 밖으로 나가지 않아요.');});
+demo.addEventListener('click',function(){enter(clone(BASE));toast('예시 화면이에요. 저장해도 이 브라우저 밖으로 나가지 않아요.');});
 
 /* view / window 전환 (이 기기에서 기억) */
 function setMode(m){document.body.classList.toggle('mode-view',m==='view');
@@ -588,8 +606,12 @@ function setMode(m){document.body.classList.toggle('mode-view',m==='view');
 document.addEventListener('click',function(e){var b=e.target.closest('[data-mode]');if(b){setMode(b.dataset.mode);if(!ov.hidden&&b.dataset.mode==='view'&&document.querySelector('#af,#pf,#ef'))closeSheet();}});
 setMode((function(){try{return localStorage.getItem('rom-mode');}catch(e){return null;}})()==='window'?'window':'view');
 
-render();
-var saved=getTok();if(saved){GH.token=saved;tryLogin(saved,!!(function(){try{return localStorage.getItem(TKEY);}catch(e){return null;}})());}else showGate('');
+var saved=getTok();
+if(saved){GH.token=saved;var cs=cachedState();
+  if(cs){state=cs;gate.hidden=true;app.inert=false;render();fromHash();}   /* 기억해 둔 내용을 바로 표시 */
+  else{boot.hidden=false;app.inert=true;}                                   /* 처음이면 '불러오는 중' */
+  tryLogin(saved,!!(function(){try{return localStorage.getItem(TKEY);}catch(e){return null;}})());}
+else showGate('');
 
 })();
 </script>
