@@ -127,6 +127,10 @@ img{display:block;max-width:100%}
 .it:focus-visible{outline:none}
 .art{aspect-ratio:1;border:1px solid var(--line);background:var(--bg);position:relative;overflow:hidden}
 .art img{width:100%;height:100%;object-fit:contain}
+img.ld{opacity:0}
+img{transition:opacity .2s}
+.loading{background:linear-gradient(100deg,#f4f4f2 30%,#e9e9e6 50%,#f4f4f2 70%) 0 0/300% 100%;animation:shim 1.3s linear infinite}
+@keyframes shim{to{background-position:-150% 0}}
 .art.contain img{padding:10%}
 .it .nm{display:flex;flex-direction:column;gap:2px;font-size:13px;margin-top:8px;line-height:1.35;word-break:keep-all}
 .it .nm em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--mute);white-space:nowrap}
@@ -344,19 +348,37 @@ var Store={
     gh('/contents/'+path).then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)gh('/contents/'+path,{method:'DELETE',body:{message:'R♡M: 이미지 삭제',sha:j.sha}});}).catch(function(){});}
 };
 /* 비공개 저장소 이미지는 주소만으로 열리지 않아서 토큰으로 받아와 붙인다 */
-var imgCache={};
-function hydrate(root){(root||document).querySelectorAll('img[data-gh]').forEach(function(im){var p=im.getAttribute('data-gh');
-  if(!imgCache[p])imgCache[p]=gh('/contents/'+p,{accept:'application/vnd.github.raw'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){return URL.createObjectURL(b);}).catch(function(){delete imgCache[p];return '';});
-  imgCache[p].then(function(u){if(u)im.src=u;});im.removeAttribute('data-gh');});}
+/* 이미지 파일 이름은 올릴 때마다 새로 정해져서 내용이 바뀌지 않으므로, 한 번 받은 이미지는 이 기기(Cache Storage)에 저장해 두고 다음부터 바로 쓴다.
+   '나가기'를 누르면 이 저장분도 지운다. */
+var IMG_CACHE='rom-img-v1',imgCache={};
+function cacheKey(p){return location.origin+'/__rom-img/'+p;}
+function openCache(){try{return window.caches?caches.open(IMG_CACHE):Promise.reject();}catch(e){return Promise.reject(e);}}
+function loadImg(p){
+  if(imgCache[p])return imgCache[p];
+  imgCache[p]=openCache().then(function(c){return c.match(cacheKey(p)).then(function(hit){if(!hit)throw 0;return hit.blob();});})
+    .catch(function(){return gh('/contents/'+p,{accept:'application/vnd.github.raw'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){
+      var type=/\.png$/i.test(p)?'image/png':'image/jpeg';b=b.type===type?b:new Blob([b],{type:type});
+      openCache().then(function(c){return c.put(cacheKey(p),new Response(b,{headers:{'Content-Type':type}}));}).catch(function(){});return b;});})
+    .then(function(b){return URL.createObjectURL(b);}).catch(function(){delete imgCache[p];return '';});
+  return imgCache[p];}
+function hydrate(root){(root||document).querySelectorAll('img[data-gh]').forEach(function(im){var p=im.getAttribute('data-gh');im.removeAttribute('data-gh');
+  loadImg(p).then(function(u){if(!u)return;im.onload=function(){im.classList.remove('ld');var a=im.closest('.loading');if(a)a.classList.remove('loading');};im.src=u;});});}
+/* 들어오자마자 모든 이미지를 미리 받아 둔다 (동시에 4개씩) */
+function prefetchAll(){var ps=[];(state.items||[]).forEach(function(i){if(i.img&&i.img.indexOf('gh:')===0)ps.push(i.img.slice(3));});
+  var pts=state.portraits||{};Object.keys(pts).forEach(function(k){if(pts[k]&&pts[k].indexOf('gh:')===0)ps.push(pts[k].slice(3));});
+  var q=ps.slice();function next(){var p=q.shift();if(!p)return;loadImg(p).then(next,next);}for(var k=0;k<4;k++)next();}
+function clearImgCache(){imgCache={};try{if(window.caches)caches.delete(IMG_CACHE);}catch(e){}}
 var state=clone(BASE);
 var cur='syndrome',uniOpen={};
 
 function find(id){return state.items.filter(function(i){return i.id===id;})[0];}
 function main(id){return state.mains.filter(function(m){return m.id===id;})[0];}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-var BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACw=';
-function imgTag(it,alt){var g=it.img&&it.img.indexOf('gh:')===0;return '<img src="'+(g?BLANK:esc(it.img||svgUri(it.art||'jacket')))+'"'+(g?' data-gh="'+esc(it.img.slice(3))+'"':'')+' alt="'+esc(alt)+'" loading="lazy">';}
-function art(it){return '<div class="art'+(it.img?'':' contain')+'">'+imgTag(it,it.title)+'</div>';}
+/* 불러오는 동안 쓰는 투명한 1x1 이미지 (깨진 이미지 아이콘이 뜨지 않게) */
+var BLANK='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+function isGh(it){return !!(it.img&&it.img.indexOf('gh:')===0);}
+function imgTag(it,alt){var g=isGh(it);return '<img src="'+(g?BLANK:esc(it.img||svgUri(it.art||'jacket')))+'"'+(g?' class="ld" data-gh="'+esc(it.img.slice(3))+'" alt=""':' alt="'+esc(alt)+'"')+' decoding="async">';}
+function art(it){return '<div class="art'+(it.img?'':' contain')+(isGh(it)?' loading':'')+'">'+imgTag(it,it.title)+'</div>';}
 var H4='<i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>';
 
 function errMsg(e){var m=e&&e.message;return m==='perm'?'이 토큰은 보기 전용이라 저장할 수 없어요.':m==='auth'?'토큰이 만료됐거나 삭제됐어요. 다시 입장해 주세요.':m==='conflict'?'다른 사람이 먼저 저장했어요. 최신 내용을 불러왔으니 다시 해 주세요.':'저장하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';}
@@ -376,7 +398,7 @@ function render(){
   document.getElementById('n-syndrome').textContent=n.syndrome;document.getElementById('n-ria').textContent=n.ria;
   var pts=state.portraits||{};
   document.getElementById('portraits').innerHTML=['syndrome','ria'].map(function(c){var src=pts[c];return '<div class="pt'+(c===cur?' on':'')+'">'+
-    '<button class="pick" data-'+(src?'char':'portrait')+'="'+c+'" aria-label="'+CHARS[c]+(src?' 의상 보기':' 대표 이미지 넣기')+'"><div class="frame">'+(src?imgTag({img:src},CHARS[c]):'<span class="empty2"><b>+</b>대표 이미지<br>넣기</span>')+'</div>'+H4+'</button>'+
+    '<button class="pick" data-'+(src?'char':'portrait')+'="'+c+'" aria-label="'+CHARS[c]+(src?' 의상 보기':' 대표 이미지 넣기')+'"><div class="frame'+(src&&src.indexOf('gh:')===0?' loading':'')+'">'+(src?imgTag({img:src},CHARS[c]):'<span class="empty2"><b>+</b>대표 이미지<br>넣기</span>')+'</div>'+H4+'</button>'+
     (src?'<button class="ed" data-portrait="'+c+'" aria-label="'+CHARS[c]+' 대표 이미지 바꾸기">변경</button>':'')+
     '<div class="cap"><b>'+CHARS[c]+'</b><span>'+c+'.png</span></div></div>';}).join('');
   var list=state.items.filter(function(i){return i.char===cur;});
@@ -545,8 +567,8 @@ var gate=document.getElementById('gate'),gform=document.getElementById('gform'),
 function getTok(){try{return localStorage.getItem(TKEY)||sessionStorage.getItem(TKEY)||'';}catch(e){return '';}}
 function setTok(t,keep){try{localStorage.removeItem(TKEY);sessionStorage.removeItem(TKEY);if(t)(keep?localStorage:sessionStorage).setItem(TKEY,t);}catch(e){}}
 function showGate(msg){gate.hidden=false;app.inert=true;document.getElementById('gerr').textContent=msg||'';setTimeout(function(){document.getElementById('gtoken').focus();},50);}
-function enter(s){state=s||clone(BASE);gate.hidden=true;app.inert=false;render();fromHash();}
-function logout(){setTok('');Store.gh=false;GH.token='';GH.sha=null;imgCache={};state=clone(BASE);document.getElementById('gtoken').value='';showGate('');}
+function enter(s){state=s||clone(BASE);gate.hidden=true;app.inert=false;render();fromHash();if(Store.gh)prefetchAll();}
+function logout(){setTok('');Store.gh=false;GH.token='';GH.sha=null;clearImgCache();state=clone(BASE);document.getElementById('gtoken').value='';showGate('');}
 function tryLogin(t,keep){var btn=gform.querySelector('button');btn.disabled=true;btn.textContent='확인 중…';
   return Store.login(t).then(function(s){setTok(t,keep);btn.disabled=false;btn.textContent='입장';enter(s);},
     function(e){btn.disabled=false;btn.textContent='입장';setTok('');
