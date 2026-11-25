@@ -1,0 +1,722 @@
+/* 케이브덕 → 한글(HWP) 편집 창 스킨
+ * 모든 규칙은 html[data-hwp-theme] 아래에서만 적용된다. (끄면 원래 화면)
+ * 채팅 화면 전용 규칙은 html[data-hwp-theme][data-hwp-page="talk"] 아래.
+ */
+
+/* ───────────── 공통 변수 ───────────── */
+html[data-hwp-theme] {
+  --hwp-font: "함초롬바탕", "HCR Batang", "HCRBatang", "한컴바탕", "Nanum Myeongjo", "나눔명조", "바탕", Batang, "AppleMyungjo", serif;
+  --hwp-ui: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Nanum Gothic", sans-serif;
+  --hwp-blue: #2b5fb3;
+  --hwp-sel: #cfe0f7;
+  --hwp-area: #b9bcc1;         /* 편집 영역 회색 */
+  --hwp-chrome: #f3f3f3;       /* 도구 모음 바탕 */
+  --hwp-line-c: #c9c9c9;
+  --hwp-title-h: 30px;
+  --hwp-menu-h: 28px;
+  --hwp-ribbon-h: 62px;
+  --hwp-fmt-h: 30px;
+  --hwp-ruler-h: 22px;
+  --hwp-tabs-h: 24px;
+  --hwp-status-h: 24px;
+  --hwp-top: calc(var(--hwp-title-h) + var(--hwp-menu-h) + var(--hwp-ribbon-h) + var(--hwp-fmt-h) + var(--hwp-ruler-h));
+  --hwp-bottom: calc(var(--hwp-tabs-h) + var(--hwp-status-h));
+  --hwp-paper-w: 794px;        /* A4 210mm */
+  --hwp-margin-x: 113px;       /* 30mm */
+  --hwp-margin-top: 75px;      /* 20mm */
+  --hwp-fs: 10pt;
+  --hwp-lh: 1.6;
+  --hwp-zoom: 1;
+  --hwp-sbw: 0px;
+}
+
+/* ───────────── 밝은 테마 강제 (케이브덕 다크 팔레트 덮어쓰기) ───────────── */
+html[data-hwp-theme][data-hwp-page="talk"],
+html[data-hwp-theme][data-hwp-page="talk"] body,
+html[data-hwp-theme][data-hwp-page="talk"] .dark,
+html[data-hwp-theme][data-hwp-page="talk"] .light {
+  color-scheme: light !important;
+  --color-cb-primary-50: #eef4fc !important;
+  --color-cb-primary-100: #dbe7f8 !important;
+  --color-cb-primary-200: #b9d0f1 !important;
+  --color-cb-primary-300: #7ea6e3 !important;
+  --color-cb-primary-400: #4d82d1 !important;
+  --color-cb-primary-500: #2b5fb3 !important;
+  --color-cb-primary-600: #2b5fb3 !important;
+  --color-cb-primary-700: #234f96 !important;
+  --color-cb-primary-800: #1c3f78 !important;
+  --color-cb-primary-900: #16325f !important;
+  --color-primary: #2b5fb3 !important;
+  --color-primary-foreground: #ffffff !important;
+  --color-ring: #2b5fb3 !important;
+  --color-cb-background-100: #c5c5c5 !important;
+  --color-cb-background-200: #f7f7f7 !important;
+  --color-cb-background-300: #fefefe !important;
+  --color-cb-background-grad-0: rgba(255, 255, 255, 0) !important;
+  --color-cb-background-grad-20: rgba(255, 255, 255, .2) !important;
+  --color-cb-background-grad-60: rgba(255, 255, 255, .6) !important;
+  --color-cb-background-surface-overlay: #f7f7f7 !important;
+  --color-cb-gray-50: #f9f9f8 !important;
+  --color-cb-gray-100: #f2f2f2 !important;
+  --color-cb-gray-200: #e6e6e6 !important;
+  --color-cb-gray-300: #d8d8d8 !important;
+  --color-cb-gray-400: #c5c5c5 !important;
+  --color-cb-gray-500: #a8a8a8 !important;
+  --color-cb-gray-600: #8a8a8a !important;
+  --color-cb-gray-700: #5f5f5f !important;
+  --color-cb-gray-800: #3a3a3a !important;
+  --color-cb-gray-900: #1f1f1f !important;
+  --color-cb-gray-bg: #fff !important;
+  --color-cb-gray-bk: #000 !important;
+  --color-cb-gray-800-dark: #3a3a3a !important;
+  --color-cb-semantic-warning-200: #c0392b !important;
+  --color-cb-semantic-chat-char: #000 !important;
+  --color-cb-semantic-chat-user: #000 !important;
+  --color-duck-pink1: #2b5fb3 !important;
+  --color-duck-pink2: #2b5fb3 !important;
+  --color-duck-pink4: #2b5fb3 !important;
+  --color-duck-pink5: #2b5fb3 !important;
+  --color-memory-bracket: #2b5fb3 !important;
+  --color-user-message: #000 !important;
+  --color-desc-message: #000 !important;
+  --color-char-message: #000 !important;
+  --color-background-markdown: #f2f2f2 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] body {
+  background: var(--hwp-area) !important;
+  color: #000 !important;
+  overflow: hidden !important;
+}
+
+/* ───────────── 내 UI 공통 ───────────── */
+#hwp-top, #hwp-bottom, #hwp-boss { display: none; }
+html[data-hwp-theme][data-hwp-page="talk"] #hwp-top,
+html[data-hwp-theme][data-hwp-page="talk"] #hwp-bottom { display: block; }
+html[data-hwp-theme] #hwp-top,
+html[data-hwp-theme] #hwp-bottom,
+html[data-hwp-theme] #hwp-boss {
+  font-family: var(--hwp-ui);
+  font-size: 12px;
+  line-height: 1.2;
+  color: #222;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+html[data-hwp-theme] #hwp-top *, html[data-hwp-theme] #hwp-bottom *, html[data-hwp-theme] #hwp-boss * { box-sizing: border-box; }
+html[data-hwp-theme] #hwp-top svg, html[data-hwp-theme] #hwp-bottom svg, html[data-hwp-theme] #hwp-boss svg { display: inline-block; flex: none; vertical-align: middle; }
+
+html[data-hwp-theme] #hwp-top {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+  height: var(--hwp-top);
+  background: var(--hwp-chrome);
+}
+html[data-hwp-theme] #hwp-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+  height: var(--hwp-bottom);
+  background: var(--hwp-chrome);
+}
+
+/* 제목 표시줄 */
+html[data-hwp-theme] .hwp-titlebar {
+  height: var(--hwp-title-h);
+  display: flex; align-items: center; position: relative;
+  background: #fbfbfb;
+  border-bottom: 1px solid #e2e2e2;
+  padding-left: 8px;
+}
+html[data-hwp-theme] .hwp-qa { display: flex; align-items: center; gap: 2px; z-index: 1; }
+html[data-hwp-theme] .hwp-qa-sep { width: 1px; height: 14px; background: #d0d0d0; margin: 0 6px; }
+html[data-hwp-theme] .hwp-title-text {
+  position: absolute; left: 0; right: 0; text-align: center;
+  font-size: 12px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 0 170px; pointer-events: none;
+}
+html[data-hwp-theme] .hwp-win { margin-left: auto; display: flex; height: 100%; z-index: 1; }
+html[data-hwp-theme] .hwp-win > span { width: 46px; display: flex; align-items: center; justify-content: center; }
+html[data-hwp-theme] .hwp-win > span:hover { background: #e5e5e5; }
+html[data-hwp-theme] .hwp-win > .hwp-win-x:hover { background: #e81123; }
+html[data-hwp-theme] .hwp-win > .hwp-win-x:hover path { stroke: #fff; }
+
+/* 메뉴 탭 */
+html[data-hwp-theme] .hwp-menubar {
+  height: var(--hwp-menu-h);
+  display: flex; align-items: flex-end;
+  padding: 0 6px;
+  background: var(--hwp-chrome);
+  border-bottom: 1px solid #d3d3d3;
+}
+html[data-hwp-theme] .hwp-menu {
+  height: 24px; padding: 0 11px;
+  display: flex; align-items: center;
+  font-size: 12.5px; color: #222;
+  border: 1px solid transparent; border-bottom: 0;
+  margin-bottom: -1px;
+}
+html[data-hwp-theme] .hwp-menu:hover { background: #e6edf7; }
+html[data-hwp-theme] .hwp-menu.on {
+  background: #fafafa; border-color: #d3d3d3; color: var(--hwp-blue); font-weight: 700;
+}
+html[data-hwp-theme] .hwp-menu-fill { flex: 1; }
+html[data-hwp-theme] .hwp-menu-right {
+  display: flex; align-items: center; gap: 4px; height: 24px; margin-right: 96px; color: #555; font-size: 12px;
+}
+
+/* 리본 (기본 도구 상자) */
+html[data-hwp-theme] .hwp-ribbon {
+  height: var(--hwp-ribbon-h);
+  display: flex; align-items: stretch;
+  background: #fafafa;
+  border-bottom: 1px solid #dcdcdc;
+  padding: 3px 4px;
+  overflow: hidden;
+}
+html[data-hwp-theme] .hwp-tg { display: flex; align-items: stretch; gap: 2px; padding: 0 6px; border-right: 1px solid #e0e0e0; }
+html[data-hwp-theme] .hwp-tg-last { border-right: 0; }
+html[data-hwp-theme] .hwp-big {
+  width: 52px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 2px; padding-top: 3px; font-size: 11.5px; color: #333; border: 1px solid transparent;
+}
+html[data-hwp-theme] .hwp-col { display: flex; flex-direction: column; justify-content: space-between; padding: 1px 0; }
+html[data-hwp-theme] .hwp-sm { display: flex; align-items: center; gap: 4px; height: 17px; padding: 0 5px 0 3px; font-size: 11.5px; color: #333; border: 1px solid transparent; }
+html[data-hwp-theme] .hwp-big:hover, html[data-hwp-theme] .hwp-sm:hover,
+html[data-hwp-theme] .hwp-ib:hover, html[data-hwp-theme] .hwp-fb:hover, html[data-hwp-theme] .hwp-spin-b:hover {
+  background: #e3ecf8; border-color: #a9c4ea;
+}
+
+/* 서식 도구 상자 */
+html[data-hwp-theme] .hwp-fmtbar {
+  height: var(--hwp-fmt-h);
+  display: flex; align-items: center; gap: 2px;
+  padding: 0 6px;
+  background: var(--hwp-chrome);
+  border-bottom: 1px solid #d3d3d3;
+  overflow: hidden; white-space: nowrap;
+}
+html[data-hwp-theme] .hwp-fsep { width: 1px; height: 18px; background: #d2d2d2; margin: 0 5px; flex: none; }
+html[data-hwp-theme] .hwp-combo {
+  position: relative; height: 22px; display: flex; align-items: center; justify-content: space-between;
+  background: #fff; border: 1px solid #b9b9b9; padding: 0 5px 0 6px; flex: none;
+}
+html[data-hwp-theme] .hwp-combo-txt { font-size: 12px; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html[data-hwp-theme] .hwp-ff { font-family: var(--hwp-font); }
+html[data-hwp-theme] .hwp-w-style { width: 96px; }
+html[data-hwp-theme] .hwp-w-lang { width: 52px; }
+html[data-hwp-theme] .hwp-w-font { width: 128px; margin-left: 2px; }
+html[data-hwp-theme] .hwp-w-size { width: 66px; margin-left: 2px; }
+html[data-hwp-theme] .hwp-w-line { width: 62px; }
+html[data-hwp-theme] .hwp-combo-sel {
+  -webkit-appearance: none; appearance: none;
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; outline: 0; background: transparent; padding: 0 16px 0 6px; margin: 0;
+  font: 12px var(--hwp-ui); color: #111; cursor: default;
+}
+html[data-hwp-theme] .hwp-combo > svg { position: absolute; right: 5px; pointer-events: none; }
+html[data-hwp-theme] .hwp-spin { display: flex; flex-direction: column; height: 22px; margin-left: 1px; flex: none; }
+html[data-hwp-theme] .hwp-spin-b {
+  height: 11px; width: 14px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid #c4c4c4; background: #fbfbfb; cursor: default;
+}
+html[data-hwp-theme] .hwp-spin-b + .hwp-spin-b { border-top: 0; }
+html[data-hwp-theme] .hwp-fb {
+  width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #222; border: 1px solid transparent; position: relative; flex: none;
+}
+html[data-hwp-theme] .hwp-b { font-weight: 800; }
+html[data-hwp-theme] .hwp-i { font-style: italic; }
+html[data-hwp-theme] .hwp-u { text-decoration: underline; }
+html[data-hwp-theme] .hwp-s { text-decoration: line-through; }
+html[data-hwp-theme] .hwp-color { padding-bottom: 3px; }
+html[data-hwp-theme] .hwp-color-bar { position: absolute; left: 4px; right: 4px; bottom: 2px; height: 3px; background: #e0262b; }
+html[data-hwp-theme] .hwp-ib {
+  width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; flex: none;
+}
+html[data-hwp-theme] .hwp-ib.on { background: #d9e6f7; border-color: #a9c4ea; }
+
+/* 가로 눈금자 */
+html[data-hwp-theme] .hwp-ruler {
+  height: var(--hwp-ruler-h); position: relative; overflow: hidden;
+  background: #e4e4e4; border-bottom: 1px solid #c4c4c4;
+}
+html[data-hwp-theme] .hwp-ruler-in { position: absolute; top: 1px; left: 0; height: 20px; width: 794px; zoom: var(--hwp-zoom); }
+html[data-hwp-theme] .hwp-ruler-in svg { display: block; }
+
+/* 아래 문서 탭 */
+html[data-hwp-theme] .hwp-tabs {
+  height: var(--hwp-tabs-h);
+  display: flex; align-items: stretch;
+  background: #e9e9e9;
+  border-top: 1px solid #c4c4c4;
+  border-bottom: 1px solid #cfcfcf;
+}
+html[data-hwp-theme] .hwp-tab-nav { display: flex; align-items: center; gap: 8px; padding: 0 9px; border-right: 1px solid #cfcfcf; }
+html[data-hwp-theme] .hwp-tab-list { display: flex; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; min-width: 0; }
+html[data-hwp-theme] .hwp-tab {
+  display: flex; align-items: center; gap: 5px; padding: 0 10px 0 8px; max-width: 240px; flex: none; min-width: 0;
+  border-right: 1px solid #cfcfcf; color: #444; font-size: 12px; cursor: default; white-space: nowrap;
+}
+html[data-hwp-theme] .hwp-tab-name { overflow: hidden; text-overflow: ellipsis; }
+html[data-hwp-theme] .hwp-tab:hover { background: #f3f3f3; }
+html[data-hwp-theme] .hwp-tab.on { background: #fff; color: #111; margin-top: -1px; border-top: 2px solid var(--hwp-blue); }
+html[data-hwp-theme] .hwp-tab-x { display: flex; margin-left: 4px; }
+html[data-hwp-theme] .hwp-tab-add { display: flex; align-items: center; padding: 0 9px; }
+
+/* 상태 표시줄 */
+html[data-hwp-theme] .hwp-status {
+  height: var(--hwp-status-h);
+  display: flex; align-items: center;
+  background: var(--hwp-chrome);
+  padding: 0 4px 0 2px; font-size: 11.5px; color: #333; white-space: nowrap; overflow: hidden;
+}
+html[data-hwp-theme] .hwp-st { padding: 0 9px; border-right: 1px solid #d0d0d0; line-height: 14px; }
+html[data-hwp-theme] .hwp-st-fill { flex: 1; }
+html[data-hwp-theme] .hwp-st-views { display: flex; gap: 6px; padding: 0 10px; border-right: 1px solid #d0d0d0; }
+html[data-hwp-theme] .hwp-zoom { display: flex; align-items: center; gap: 4px; padding-left: 8px; }
+html[data-hwp-theme] .hwp-zoom-txt { min-width: 38px; text-align: right; }
+html[data-hwp-theme] .hwp-zb { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+html[data-hwp-theme] .hwp-zb:hover { background: #e3ecf8; }
+html[data-hwp-theme] .hwp-zoom input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100px; height: 14px; background: transparent; margin: 0;
+}
+html[data-hwp-theme] .hwp-zoom input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: #8d8d8d; }
+html[data-hwp-theme] .hwp-zoom input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 6px; height: 12px; margin-top: -5px; background: #555; border: 0;
+}
+html[data-hwp-theme] .hwp-zoom-track { width: 100px; height: 2px; background: #8d8d8d; position: relative; }
+html[data-hwp-theme] .hwp-zoom-track span { position: absolute; left: 33%; top: -5px; width: 6px; height: 12px; background: #555; }
+
+/* ───────────── 채팅 화면 배치 ───────────── */
+/* 원래 앱 전체를 제목줄·리본과 상태 표시줄 사이에 고정 */
+html[data-hwp-theme][data-hwp-page="talk"] main {
+  position: fixed !important;
+  top: var(--hwp-top) !important; bottom: var(--hwp-bottom) !important;
+  left: 0 !important; right: 0 !important;
+  width: auto !important; height: auto !important;
+  z-index: 31;
+  background: var(--hwp-area) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] main > [data-native-chat-safe-area] {
+  max-width: none !important; padding: 0 !important; margin: 0 !important; background: transparent !important;
+}
+/* 왼쪽 메뉴 숨김 (문서 탭으로 대체) */
+html[data-hwp-theme][data-hwp-page="talk"] body > div.flex > div:has(> nav.w-64) { display: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-nav="show"] body > div.flex > div:has(> nav.w-64) {
+  display: flex !important;
+  position: fixed !important; top: var(--hwp-top) !important; bottom: var(--hwp-bottom) !important; left: 0; height: auto !important;
+  z-index: 32; background: #f7f7f7 !important; border-right: 1px solid #c8c8c8; font-family: var(--hwp-ui) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-nav="show"] main { left: 256px !important; }
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-nav="show"] nav.w-64 img[alt="Caveduck logo"] { filter: grayscale(1); opacity: .6; }
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-nav="show"] nav.w-64 img[alt="Caveduck logo"][class*="dark:block"] { filter: invert(1) grayscale(1); }
+
+/* 원래 상단바: 메뉴 줄 오른쪽에 작은 아이콘으로 (설정·뒤로 버튼은 그대로 동작) */
+html[data-hwp-theme][data-hwp-page="talk"] main header {
+  position: fixed !important;
+  top: var(--hwp-title-h) !important; right: 4px !important; left: auto !important;
+  width: auto !important; height: var(--hwp-menu-h) !important;
+  padding: 0 !important; margin: 0 !important; gap: 0 !important;
+  background: transparent !important; z-index: 5;
+}
+html[data-hwp-theme][data-hwp-page="talk"] main header nav { width: auto !important; flex: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"] main header nav > button.truncate,
+html[data-hwp-theme][data-hwp-page="talk"] main header .sm\:hidden { display: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"] main header button {
+  width: 26px !important; height: 24px !important; min-width: 0 !important;
+  border-radius: 0 !important; color: #555 !important; background: transparent !important;
+  border: 1px solid transparent !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] main header button:hover { background: #e3ecf8 !important; border-color: #a9c4ea !important; }
+html[data-hwp-theme][data-hwp-page="talk"] main header button svg { width: 15px !important; height: 15px !important; stroke-width: 1.8; }
+
+/* 캐릭터 이미지 패널 숨김 */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-background-panel,
+html[data-hwp-theme][data-hwp-page="talk"] #chat-divider-handle { display: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel { background: var(--hwp-area) !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel > div,
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel > div > div { background: transparent !important; }
+
+/* 편집 영역 (스크롤 영역) */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel .flex-col-reverse.overflow-y-auto {
+  background: var(--hwp-area) !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #a9a9a9 #ececec !important;
+  overflow-anchor: auto;
+  letter-spacing: 0 !important;
+}
+
+/* A4 용지 */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel .flex-col-reverse.overflow-y-auto > div {
+  zoom: var(--hwp-zoom);
+  flex: none !important;
+  align-self: center !important;
+  width: var(--hwp-paper-w) !important; max-width: none !important;
+  min-height: 1123px;
+  margin: 14px auto auto !important;
+  padding: var(--hwp-margin-top) var(--hwp-margin-x) 28px !important;
+  background-color: #fff !important;
+  /* 쪽마다 편집 용지 안내선(모서리 표시) + 쪽 경계 점선 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='794' height='1123'%3E%3Cg fill='none' stroke='%23b4b4b4'%3E%3Cpath d='M103 75.5h10V65M691 75.5h-10V65M103 1065.5h10v10M691 1065.5h-10v10'/%3E%3C/g%3E%3Cpath d='M0 1122.5h794' stroke='%238f8f8f' stroke-dasharray='3 3'/%3E%3C/svg%3E") !important;
+  background-repeat: repeat-y !important;
+  background-size: 794px 1123px !important;
+  background-position: 0 0 !important;
+  box-shadow: 0 0 0 1px #8e8e8e, 3px 3px 0 1px rgba(0, 0, 0, .28) !important;
+  color: #000 !important;
+  font-family: var(--hwp-font) !important;
+  font-size: var(--hwp-fs) !important;
+  line-height: var(--hwp-lh) !important;
+  letter-spacing: 0 !important;
+  word-break: keep-all;
+  counter-reset: hwp-memo hwp-tbl;
+  text-align: justify;
+}
+
+/* 맨 위 안내문 → 문서 제목 + 작성일 (+ 작게 보기일 때 그림) */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel .flex-col-reverse.overflow-y-auto > div > p:first-child {
+  font-size: 0 !important; line-height: 0 !important; color: transparent !important;
+  padding: 0 0 18px !important; margin: 0 !important; text-align: center !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel .flex-col-reverse.overflow-y-auto > div > p:first-child::before {
+  content: var(--hwp-title, "제목 없음");
+  display: block; color: #000; font-family: var(--hwp-font);
+  font-size: calc(var(--hwp-fs) * 2); font-weight: 700; line-height: 1.5; letter-spacing: .02em;
+  margin: 0 0 6px;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel .flex-col-reverse.overflow-y-auto > div > p:first-child::after {
+  content: var(--hwp-date, "");
+  display: block; text-align: right; color: #333; font-family: var(--hwp-font);
+  font-size: calc(var(--hwp-fs) * .9); line-height: 1.6;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-img="small"] #chat-content-panel .flex-col-reverse.overflow-y-auto > div > p:first-child {
+  padding-bottom: 156px !important;
+  background: var(--hwp-img, none) center bottom 18px / auto 128px no-repeat !important;
+  filter: grayscale(1);
+}
+
+/* 메시지 1턴 */
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] {
+  position: relative;
+  color: #000 !important;
+  font-family: var(--hwp-font) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [role="status"] { color: #999 !important; }
+
+/* 본문 글자: 검정·이탤릭 제거·글꼴 통일 (인라인 color 덮어쓰기) */
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] [data-chat-excerpt],
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] [data-chat-excerpt]:not([data-chat-excerpt="text"]) *:not(svg):not(path) {
+  color: #000 !important;
+  font-style: normal !important;
+  font-family: var(--hwp-font) !important;
+  text-shadow: none !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] [data-chat-excerpt]:not([data-chat-excerpt="text"]),
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="contain:paint"],
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > .mb-4 {
+  font-size: var(--hwp-fs) !important;
+  line-height: var(--hwp-lh) !important;
+  letter-spacing: 0 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] .italic { font-style: normal !important; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] [dir="auto"] { text-align: justify !important; }
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-bold="1"] [id^="chat-message-"] > [class*="contain:paint"] [data-chat-excerpt="dialogue"] { -webkit-text-stroke: .18px currentColor; }
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-indent="1"] [id^="chat-message-"] > [class*="contain:paint"] span.block { text-indent: 1em; }
+
+/* 내 메시지: 메모 */
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > .mb-4 { margin: 0 !important; }
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-memo="memo"] [id^="chat-message-"] > .mb-4:not(:empty) {
+  counter-increment: hwp-memo;
+  margin: 6px 0 14px !important;
+  background: #fffbd7 !important;
+  border: 1px solid #d9c25a;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, .08);
+  padding: 0 9px 6px !important;
+  font-size: calc(var(--hwp-fs) * .92) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-memo="memo"] [id^="chat-message-"] > .mb-4:not(:empty)::before {
+  content: "메모 " counter(hwp-memo);
+  display: block; margin: 0 -9px 5px; padding: 1px 8px;
+  background: #f4e597; border-bottom: 1px solid #d9c25a;
+  font: 700 11px/18px var(--hwp-ui); color: #5c4d00; text-align: left;
+}
+/* 내 메시지: 본문(음영) */
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-memo="shade"] [id^="chat-message-"] > .mb-4:not(:empty) {
+  margin: 4px 0 12px !important; padding: 4px 8px !important; background: #ececec !important;
+}
+/* 내 메시지: 본문(인용) */
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-memo="quote"] [id^="chat-message-"] > .mb-4:not(:empty) {
+  margin: 4px 0 12px !important; padding: 0 0 0 12px !important; border-left: 2px solid #777;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-memo="quote"] [id^="chat-message-"] > .mb-4 [data-chat-excerpt] { color: #333 !important; }
+/* 내 메시지: 숨김 */
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-memo="hide"] [id^="chat-message-"] > .mb-4 { display: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > .mb-4 [data-chat-excerpt] { font-weight: 400 !important; }
+
+/* 메시지 버튼줄: 마우스를 올렸을 때만 작은 회색 아이콘 */
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [data-chat-content-id] {
+  position: absolute !important; top: 0; right: calc(var(--hwp-margin-x) * -1 + 4px);
+  width: calc(var(--hwp-margin-x) - 8px); height: auto !important;
+  flex-wrap: wrap; justify-content: flex-start !important; gap: 0;
+  opacity: 0; transition: opacity .12s; z-index: 2;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] {
+  min-height: 0 !important; margin: 2px 0 6px !important;
+  opacity: 0; transition: opacity .12s;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"]:hover > [data-chat-content-id],
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"]:hover > [class*="min-h-[18px]"],
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [data-chat-content-id]:focus-within,
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"]:focus-within { opacity: 1; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"]:last-child > [class*="min-h-[18px]"] { opacity: .45; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"]:last-child:hover > [class*="min-h-[18px]"] { opacity: 1; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [data-chat-content-id] button,
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] button {
+  width: 22px !important; height: 22px !important; min-width: 0 !important;
+  border-radius: 0 !important; background: transparent !important; color: #777 !important;
+  border: 1px solid transparent !important; font-family: var(--hwp-ui) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] button:has(> span) {
+  width: auto !important; padding: 0 4px !important; font-size: 11px !important; gap: 3px !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [data-chat-content-id] button:hover,
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] button:hover {
+  background: #e3ecf8 !important; border-color: #a9c4ea !important; color: #333 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [data-chat-content-id] svg,
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] svg { width: 14px !important; height: 14px !important; fill: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] img { filter: grayscale(1); opacity: .7; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] * { color: #666 !important; font-family: var(--hwp-ui) !important; }
+
+/* ───────────── 답변 속 HTML 카드 & 상태창 ───────────── */
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > .isolate,
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] .bg-background-markdown\/80 {
+  counter-increment: hwp-tbl;
+}
+/* 캡션 공통 */
+html[data-hwp-theme][data-hwp-page="talk"]:not([data-hwp-card="show"]):not([data-hwp-card="hide"]) [id^="chat-message-"] > .isolate::before,
+html[data-hwp-theme][data-hwp-page="talk"]:not([data-hwp-card="show"]):not([data-hwp-card="hide"]) [id^="chat-message-"] .bg-background-markdown\/80::before {
+  display: block; flex: none; width: 100%;
+  font: 400 calc(var(--hwp-fs) * .95)/1.7 var(--hwp-font);
+  color: #222; text-align: left; letter-spacing: 0;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > .isolate { --hwp-cap: "상태창"; }
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] .bg-background-markdown\/80 { --hwp-cap: "글상자"; }
+
+/* 카드 안의 제작자 HTML 글꼴·색은 건드리지 않음 (흑백/접기 처리만) */
+html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] [data-chat-excerpt="text"] { font-family: inherit !important; }
+
+/* 접기 */
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] > .isolate,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] .bg-background-markdown\/80 {
+  display: block !important; cursor: pointer;
+  margin: 4px 0 8px !important; padding: 0 !important;
+  background: transparent !important; border-radius: 0 !important; box-shadow: none !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] > .isolate::before,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] .bg-background-markdown\/80::before {
+  content: "▸ [표 " counter(hwp-tbl) "] " var(--hwp-cap);
+  padding: 0 4px; border: 1px dotted transparent; width: auto; display: inline-block;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] > .isolate:hover::before,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] .bg-background-markdown\/80:hover::before {
+  background: var(--hwp-sel); border-color: #7ea6e3;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] > .isolate:not([data-hwp-open]) > *,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] .bg-background-markdown\/80:not([data-hwp-open]) > * {
+  display: none !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] > .isolate[data-hwp-open]::before,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] .bg-background-markdown\/80[data-hwp-open]::before {
+  content: "▾ [표 " counter(hwp-tbl) "] " var(--hwp-cap);
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] > .isolate[data-hwp-open] > *,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="collapse"] [id^="chat-message-"] .bg-background-markdown\/80[data-hwp-open] > * {
+  margin-top: 4px; cursor: auto;
+}
+
+/* 흑백 */
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] > .isolate,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] .bg-background-markdown\/80 {
+  display: block !important; margin: 6px 0 10px !important; padding: 0 !important;
+  background: transparent !important; border-radius: 0 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] > .isolate::before,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] .bg-background-markdown\/80::before {
+  content: "[표 " counter(hwp-tbl) "] " var(--hwp-cap); text-align: center; margin-bottom: 3px;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] > .isolate > *,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] .bg-background-markdown\/80 > * {
+  filter: grayscale(1) contrast(1.05);
+  outline: 1px solid #000; outline-offset: 2px;
+}
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="gray"] [id^="chat-message-"] .bg-background-markdown\/80 > article { padding: 6px; }
+
+/* 숨김 */
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="hide"] [id^="chat-message-"] > .isolate,
+html[data-hwp-theme][data-hwp-page="talk"][data-hwp-card="hide"] [id^="chat-message-"] .bg-background-markdown\/80 { display: none !important; }
+
+/* ───────────── 입력창: 용지 맨 아래 다음 문단처럼 ───────────── */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] {
+  zoom: var(--hwp-zoom);
+  width: var(--hwp-paper-w) !important; max-width: calc(100% - 8px);
+  margin: 0 auto !important;
+  position: relative; left: calc(var(--hwp-sbw) / -2 / var(--hwp-zoom));
+  padding: 2px var(--hwp-margin-x) 10px !important;
+  gap: 0 !important;
+  background: #fff !important;
+  box-shadow: 1px 0 0 0 #8e8e8e, -1px 0 0 0 #8e8e8e, 4px 0 0 0 rgba(0, 0, 0, .28) !important;
+  font-family: var(--hwp-font) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] > div,
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] {
+  background: transparent !important; box-shadow: none !important; border: 0 !important;
+  border-radius: 0 !important; backdrop-filter: none !important; padding: 0 !important; --tw-ring-shadow: 0 0 #0000 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] [role="textbox"][contenteditable],
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] [role="textbox"] + span[aria-hidden] {
+  font-family: var(--hwp-font) !important;
+  font-size: var(--hwp-fs) !important;
+  line-height: var(--hwp-lh) !important;
+  letter-spacing: 0 !important;
+  color: #000 !important;
+  caret-color: #000 !important;
+  text-align: justify;
+}
+/* placeholder → 가짜 깜빡이는 커서 + "내용을 입력하세요" */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] [role="textbox"] + span[aria-hidden] {
+  font-size: 0 !important; color: transparent !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] [role="textbox"] + span[aria-hidden]::before {
+  content: ""; display: inline-block; vertical-align: middle;
+  width: 0; height: 1.15em; border-left: 1.5px solid #000; margin-right: 1px;
+  font-size: var(--hwp-fs);
+  animation: hwp-blink 1.06s steps(1) infinite;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] [role="textbox"] + span[aria-hidden]::after {
+  content: "내용을 입력하세요"; font-size: var(--hwp-fs); color: #b4b4b4; vertical-align: middle;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] [role="textbox"]:focus + span[aria-hidden]::before { visibility: hidden; animation: none; }
+@keyframes hwp-blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+
+/* 입력창 버튼: 작은 회색 아이콘 한 줄 */
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] > div.mt-3 {
+  margin-top: 4px !important; gap: 6px !important;
+  border-top: 1px dotted #d2d2d2; padding-top: 3px;
+  opacity: .75; transition: opacity .12s;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"]:hover > div.mt-3,
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"]:focus-within > div.mt-3 { opacity: 1; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] .order-first,
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] .order-last { gap: 2px !important; height: auto !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] button {
+  height: 22px !important; min-width: 22px !important; width: auto !important; padding: 0 3px !important;
+  border-radius: 0 !important; background: transparent !important; color: #666 !important;
+  border: 1px solid transparent !important; box-shadow: none !important; gap: 2px !important;
+  font-family: var(--hwp-ui) !important; font-size: 11px !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] button:hover {
+  background: #e3ecf8 !important; border-color: #a9c4ea !important; color: #222 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] button svg {
+  width: 16px !important; height: 16px !important; color: #666 !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] button svg [fill]:not([fill="none"]) { fill: currentColor !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] .order-last > div { width: auto !important; height: auto !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] img { filter: grayscale(1); opacity: .75; width: 14px !important; height: 14px !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel form[data-tour="chat-input"] button[type="submit"] { color: var(--hwp-blue) !important; }
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] button:not(form button) {
+  border-radius: 0 !important; background: #f4f4f4 !important; color: #333 !important;
+  border: 1px solid #c8c8c8 !important; box-shadow: none !important; font-family: var(--hwp-font) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] *:not(svg):not(path):not(img) { text-shadow: none !important; }
+
+/* ───────────── 모달·메뉴: 한글 대화상자 느낌으로 재색칠 ───────────── */
+html[data-hwp-theme][data-hwp-page="talk"] [role="dialog"],
+html[data-hwp-theme][data-hwp-page="talk"] [role="menu"],
+html[data-hwp-theme][data-hwp-page="talk"] [role="listbox"],
+html[data-hwp-theme][data-hwp-page="talk"] [data-radix-popper-content-wrapper] > * {
+  background-color: #f3f3f3 !important;
+  color: #111 !important;
+  border: 1px solid #9a9a9a !important;
+  border-radius: 2px !important;
+  box-shadow: 2px 3px 10px rgba(0, 0, 0, .28) !important;
+  font-family: var(--hwp-ui) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [role="dialog"] * { border-radius: 2px; }
+html[data-hwp-theme][data-hwp-page="talk"] [role="dialog"] .text-white,
+html[data-hwp-theme][data-hwp-page="talk"] [role="dialog"] .dark\:text-white { color: #111 !important; }
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitem"],
+html[data-hwp-theme][data-hwp-page="talk"] [role="option"],
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitemradio"],
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitemcheckbox"] { border-radius: 0 !important; color: #111 !important; }
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitem"]:hover,
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitem"][data-highlighted],
+html[data-hwp-theme][data-hwp-page="talk"] [role="option"][data-highlighted],
+html[data-hwp-theme][data-hwp-page="talk"] [role="option"][aria-selected="true"],
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitemradio"][data-highlighted],
+html[data-hwp-theme][data-hwp-page="talk"] [role="menuitemcheckbox"][data-highlighted] {
+  background: var(--hwp-sel) !important; outline: 1px solid #7ea6e3 !important; outline-offset: -1px;
+}
+html[data-hwp-theme][data-hwp-page="talk"] [data-state="open"][data-aria-hidden],
+html[data-hwp-theme][data-hwp-page="talk"] div[data-state="open"].fixed.inset-0 { background: rgba(255, 255, 255, .25) !important; backdrop-filter: none !important; }
+html[data-hwp-theme][data-hwp-page="talk"] section[aria-label="Notifications"] li {
+  background: #ffffe1 !important; color: #111 !important; border: 1px solid #777 !important; border-radius: 0 !important;
+  font-family: var(--hwp-ui) !important; box-shadow: 2px 2px 6px rgba(0, 0, 0, .25) !important;
+}
+html[data-hwp-theme][data-hwp-page="talk"] #ch-plugin { filter: grayscale(1); opacity: .6; }
+
+/* ───────────── 보스 화면 ───────────── */
+html[data-hwp-theme][data-hwp-boss] #hwp-boss {
+  display: flex; flex-direction: column;
+  position: fixed; inset: 0; z-index: 2147483647;
+  background: var(--hwp-area);
+}
+html[data-hwp-theme] #hwp-boss .hwp-boss-top { height: var(--hwp-top); flex: none; background: var(--hwp-chrome); }
+html[data-hwp-theme] #hwp-boss .hwp-boss-bottom { height: var(--hwp-bottom); flex: none; background: var(--hwp-chrome); }
+html[data-hwp-theme] #hwp-boss .hwp-ruler-in { left: calc(50% - 397px); }
+html[data-hwp-theme] #hwp-boss .hwp-boss-area { flex: 1; overflow-y: scroll; scrollbar-color: #a9a9a9 #ececec; }
+html[data-hwp-theme] #hwp-boss .hwp-boss-paper {
+  width: 794px; min-height: 1123px; margin: 14px auto 30px; padding: 75px 113px;
+  background: #fff; box-shadow: 0 0 0 1px #8e8e8e, 3px 3px 0 1px rgba(0, 0, 0, .28);
+  font-family: var(--hwp-font); font-size: 10pt; line-height: 1.6; color: #000; text-align: justify;
+  user-select: text; -webkit-user-select: text; cursor: text;
+}
+html[data-hwp-theme] #hwp-boss h1 { font-size: 18pt; font-weight: 700; text-align: center; margin: 0 0 6px; letter-spacing: .02em; }
+html[data-hwp-theme] #hwp-boss h2 { font-size: 11pt; font-weight: 700; margin: 18px 0 4px; }
+html[data-hwp-theme] #hwp-boss p { margin: 0 0 4px; }
+html[data-hwp-theme] #hwp-boss .hwp-boss-meta { text-align: right; font-size: 9pt; color: #333; margin-bottom: 16px; }
+html[data-hwp-theme] #hwp-boss table { width: 100%; border-collapse: collapse; margin: 8px 0 2px; font-size: 9.5pt; }
+html[data-hwp-theme] #hwp-boss th, html[data-hwp-theme] #hwp-boss td { border: 1px solid #000; padding: 3px 6px; text-align: center; }
+html[data-hwp-theme] #hwp-boss th { background: #e5e5e5; font-weight: 700; }
+html[data-hwp-theme] #hwp-boss td:nth-child(2) { text-align: left; }
+html[data-hwp-theme] #hwp-boss .hwp-boss-cap { text-align: center; font-size: 9pt; margin-bottom: 8px; }
+
+/* ───────────── 좁은 화면 (<768px): 제목줄 + 용지 + 상태 표시줄 ───────────── */
+@media (max-width: 767.98px) {
+  html[data-hwp-theme] {
+    --hwp-menu-h: 0px; --hwp-ribbon-h: 0px; --hwp-fmt-h: 0px; --hwp-ruler-h: 0px; --hwp-tabs-h: 0px;
+    --hwp-paper-w: calc(100vw - 16px);
+    --hwp-margin-x: 18px;
+    --hwp-margin-top: 28px;
+  }
+  html[data-hwp-theme] .hwp-menubar, html[data-hwp-theme] .hwp-ribbon, html[data-hwp-theme] .hwp-fmtbar,
+  html[data-hwp-theme] .hwp-ruler, html[data-hwp-theme] .hwp-tabs, html[data-hwp-theme] .hwp-qa > :not(svg:first-child),
+  html[data-hwp-theme] .hwp-win, html[data-hwp-theme] .hwp-st-views, html[data-hwp-theme] .hwp-zoom > :not(.hwp-zoom-txt),
+  html[data-hwp-theme] .hwp-st.hwp-st-m { display: none !important; }
+  html[data-hwp-theme] .hwp-title-text { padding: 0 64px 0 30px; text-align: left; }
+  html[data-hwp-theme] .hwp-st { padding: 0 6px; }
+  html[data-hwp-theme] .hwp-status .hwp-st:nth-child(n+5):nth-child(-n+7) { display: none; }
+  html[data-hwp-theme][data-hwp-page="talk"] main header { top: 2px !important; height: 26px !important; }
+  html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel .flex-col-reverse.overflow-y-auto > div {
+    zoom: 1; margin-top: 8px !important; min-height: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='1123'%3E%3Cpath d='M0 1122.5h3' stroke='%238f8f8f'/%3E%3C/svg%3E") !important;
+    background-size: 6px 1123px !important; background-position: 0 0 !important; background-repeat: repeat !important;
+  }
+  html[data-hwp-theme][data-hwp-page="talk"] #chat-content-panel [data-chat-composer] { zoom: 1; left: 0; max-width: none; }
+  html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [data-chat-content-id] {
+    position: static !important; width: auto; opacity: .35; justify-content: flex-end !important;
+  }
+  html[data-hwp-theme][data-hwp-page="talk"] [id^="chat-message-"] > [class*="min-h-[18px]"] { opacity: .35; }
+  html[data-hwp-theme][data-hwp-page="talk"][data-hwp-nav="show"] main { left: 0 !important; }
+  html[data-hwp-theme] #hwp-boss .hwp-boss-paper { width: calc(100vw - 16px); padding: 28px 18px; min-height: 0; }
+}

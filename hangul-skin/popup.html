@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>한글 스킨 설정</title>
+<style>
+  :root { --blue: #2b5fb3; --sel: #cfe0f7; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; width: 300px; background: #f3f3f3; color: #111;
+    font: 12px/1.4 "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  }
+  .bar { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; background: #fbfbfb; border-bottom: 1px solid #d3d3d3; font-weight: 700; }
+  .bar svg { flex: none; }
+  .bar .ver { margin-left: auto; font-weight: 400; color: #888; font-size: 11px; }
+  main { padding: 8px 10px 10px; }
+  fieldset { margin: 0 0 8px; padding: 6px 8px 8px; border: 1px solid #c4c4c4; background: #fafafa; }
+  legend { padding: 0 4px; color: #333; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 26px; }
+  .row + .row { margin-top: 2px; }
+  label { color: #222; }
+  select, input[type="text"], input[type="number"] {
+    font: inherit; height: 22px; border: 1px solid #b9b9b9; background: #fff; border-radius: 0; padding: 0 4px; color: #111;
+  }
+  select { min-width: 132px; }
+  input[type="number"] { width: 64px; }
+  input[type="text"] { width: 150px; }
+  select:focus, input:focus { outline: 1px solid var(--blue); outline-offset: -1px; }
+  .seg { display: flex; border: 1px solid #b9b9b9; background: #fff; }
+  .seg button { font: inherit; border: 0; background: transparent; padding: 2px 9px; cursor: pointer; color: #222; }
+  .seg button + button { border-left: 1px solid #d3d3d3; }
+  .seg button.on { background: var(--sel); color: #0d2f66; font-weight: 700; }
+  .switch { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .hint { color: #777; font-size: 11px; margin-top: 2px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .foot button { font: inherit; height: 24px; padding: 0 12px; border: 1px solid #9a9a9a; background: #fdfdfd; cursor: pointer; }
+  .foot button:hover { background: #e3ecf8; border-color: #7ea6e3; }
+  kbd { font: 11px Consolas, monospace; border: 1px solid #bbb; background: #fff; padding: 0 3px; }
+  .off main fieldset:not(:first-child) { opacity: .5; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 1.5h7l3.5 3.5v9.5H3z" fill="#fff" stroke="#2f6bc4"/><path d="M10 1.5V5h3.5" fill="#dbe7f8" stroke="#2f6bc4"/><rect x="3" y="7" width="10.5" height="7.5" fill="#2f6bc4"/><path d="M5 9h6.5M5 11h6.5M5 13h4" stroke="#fff"/></svg>
+    한글 스킨 설정 <span class="ver" id="ver"></span>
+  </div>
+  <main>
+    <fieldset>
+      <legend>스킨</legend>
+      <div class="row">
+        <label class="switch"><input type="checkbox" id="on"> 한글 스킨 켜기</label>
+      </div>
+      <div class="row">
+        <label class="switch"><input type="checkbox" id="boss"> 보스 키 <kbd>Alt</kbd>+<kbd>Q</kbd></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>본문</legend>
+      <div class="row"><label for="memo">내 메시지</label>
+        <select id="memo">
+          <option value="memo">메모 (노란 박스)</option>
+          <option value="shade">본문 (회색 음영)</option>
+          <option value="quote">본문 (왼쪽 세로선)</option>
+          <option value="hide">숨김</option>
+        </select></div>
+      <div class="row"><label for="card">상태창·HTML 카드</label>
+        <select id="card">
+          <option value="collapse">접기 (캡션만)</option>
+          <option value="gray">흑백</option>
+          <option value="show">보이기</option>
+          <option value="hide">숨김</option>
+        </select></div>
+      <div class="row"><label>캐릭터 이미지</label>
+        <span class="seg" data-key="img"><button data-v="hide">숨김</button><button data-v="small">작게</button></span></div>
+      <div class="row"><label class="switch"><input type="checkbox" id="bold"> 대사 살짝 굵게</label></div>
+      <div class="row"><label class="switch"><input type="checkbox" id="indent"> 문단 첫 줄 들여쓰기</label></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>글자·쪽</legend>
+      <div class="row"><label for="fontPt">글자 크기 (pt)</label><input type="number" id="fontPt" min="7" max="24" step="0.5"></div>
+      <div class="row"><label for="lineH">줄 간격 (%)</label><input type="number" id="lineH" min="80" max="300" step="10"></div>
+      <div class="row"><label for="zoom">쪽 확대 (%)</label><input type="number" id="zoom" min="50" max="200" step="10"></div>
+      <div class="hint">리본의 글자 크기 ▲▼, 줄 간격과 같은 값이에요.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>화면</legend>
+      <div class="row"><label>왼쪽 메뉴</label>
+        <span class="seg" data-key="nav"><button data-v="hide">숨김 (문서 탭)</button><button data-v="show">보이기</button></span></div>
+      <div class="row"><label for="fileFmt">파일 이름</label><input type="text" id="fileFmt" placeholder="{캐릭터}.hwp"></div>
+      <div class="hint"><b>{캐릭터}</b> 자리에 캐릭터 이름이 들어가요. 예) <b>{캐릭터}_최종.hwp</b></div>
+    </fieldset>
+
+    <div class="foot">
+      <span class="hint">바꾸면 열린 탭에 바로 반영돼요.</span>
+      <button id="reset" type="button">기본값</button>
+    </div>
+  </main>
+<script src="popup.js"></script>
+</body>
+</html>
