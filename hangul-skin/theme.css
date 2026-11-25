@@ -5,7 +5,7 @@
 
 /* ───────────── 공통 변수 ───────────── */
 html[data-hwp-theme] {
-  --hwp-font: "함초롬바탕", "HCR Batang", "HCRBatang", "한컴바탕", "Nanum Myeongjo", "나눔명조", "바탕", Batang, "AppleMyungjo", serif;
+  --hwp-font: "Pretendard Variable", Pretendard, "Chat Input Pretendard", var(--font-pretendard, "Apple SD Gothic Neo"), "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   --hwp-ui: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Nanum Gothic", sans-serif;
   --hwp-blue: #2b5fb3;
   --hwp-sel: #cfe0f7;

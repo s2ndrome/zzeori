@@ -181,7 +181,7 @@
   <span class="hwp-combo hwp-w-style"><span class="hwp-combo-txt">바탕글</span>${I.caret}</span>
   <span class="hwp-fsep"></span>
   <span class="hwp-combo hwp-w-lang"><span class="hwp-combo-txt">대표</span>${I.caret}</span>
-  <span class="hwp-combo hwp-w-font"><span class="hwp-combo-txt hwp-ff">함초롬바탕</span>${I.caret}</span>
+  <span class="hwp-combo hwp-w-font"><span class="hwp-combo-txt hwp-ff">프리텐다드</span>${I.caret}</span>
   <span class="hwp-combo hwp-w-size">${fontSel}${I.caret}</span>
   <span class="hwp-spin"><span class="hwp-spin-b" data-hwp="fontup" title="글자 크게">${I.up}</span><span class="hwp-spin-b" data-hwp="fontdown" title="글자 작게">${I.down}</span></span>
   <span class="hwp-fsep"></span>
